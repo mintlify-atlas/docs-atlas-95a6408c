@@ -1,0 +1,123 @@
+---
+title: Cordova Installation
+description: Install AdMob Plus in your Cordova project
+---
+
+This guide walks you through installing the AdMob Plus plugin in your Apache Cordova project.
+
+## Prerequisites
+
+<Check>
+  Cordova CLI installed (`npm install -g cordova`)
+</Check>
+<Check>
+  An existing Cordova project
+</Check>
+<Check>
+  AdMob account with app registered
+</Check>
+
+## Installation
+
+<Steps>
+  <Step title="Install the Plugin">
+    Add the plugin to your Cordova project:
+
+    ```bash
+    cordova plugin add admob-plus-cordova
+    ```
+
+    The plugin will automatically configure itself for Android and iOS platforms.
+  </Step>
+
+  <Step title="Configure App IDs">
+    Set your AdMob App IDs using Cordova preferences in `config.xml`:
+
+    ```xml title="config.xml"
+    <preference name="ADMOB_APP_ID_ANDROID" value="ca-app-pub-xxx~xxx" />
+    <preference name="ADMOB_APP_ID_IOS" value="ca-app-pub-xxx~xxx" />
+    ```
+
+    <Note>
+      Replace `ca-app-pub-xxx~xxx` with your actual AdMob App IDs from the AdMob console.
+    </Note>
+  </Step>
+
+  <Step title="Add TypeScript Support (Optional)">
+    If you're using TypeScript, install type definitions:
+
+    ```bash
+    npm install --save-dev @types/cordova
+    ```
+
+    The plugin includes its own TypeScript definitions at `esm/index.d.ts`.
+  </Step>
+
+  <Step title="Build Your Project">
+    Build for your target platforms:
+
+    ```bash
+    cordova build android
+    cordova build ios
+    ```
+  </Step>
+</Steps>
+
+## Platform-Specific Configuration
+
+### Android
+
+The plugin automatically adds the required Google Mobile Ads SDK dependency in `build.gradle`.
+
+**Minimum Requirements:**
+- Android SDK 21+
+- Cordova Android 10.0.0+
+
+### iOS
+
+The plugin includes a CocoaPods dependency for the Google Mobile Ads SDK.
+
+**Minimum Requirements:**
+- iOS 12.0+
+- Cordova iOS 6.0.0+
+- CocoaPods installed
+
+<Tip>
+  Run `pod repo update` if you encounter dependency resolution issues.
+</Tip>
+
+## Verification
+
+Verify the installation by checking the installed plugins:
+
+```bash
+cordova plugin list
+```
+
+You should see `admob-plus-cordova` in the list.
+
+## Troubleshooting
+
+<Accordion title="Build fails with 'Could not find' dependency error">
+  This usually indicates a Gradle sync issue on Android. Try:
+  
+  1. Remove and re-add the Android platform: `cordova platform rm android && cordova platform add android`
+  2. Clean the build: `cordova clean android`
+  3. Rebuild: `cordova build android`
+</Accordion>
+
+<Accordion title="iOS build fails with CocoaPods error">
+  1. Update CocoaPods: `pod repo update`
+  2. Navigate to `platforms/ios` and run: `pod install`
+  3. Rebuild: `cordova build ios`
+</Accordion>
+
+<Accordion title="App IDs not found at runtime">
+  Ensure you've set both `ADMOB_APP_ID_ANDROID` and `ADMOB_APP_ID_IOS` preferences in `config.xml` before building.
+</Accordion>
+
+## Next Steps
+
+<Card title="Usage Guide" icon="code" href="/cordova/usage">
+  Learn how to display ads in your Cordova app
+</Card>

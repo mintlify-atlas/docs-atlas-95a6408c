@@ -1,0 +1,353 @@
+---
+title: React Native Usage
+description: Display ads in your React Native app
+---
+
+Learn how to implement AdMob ads in your React Native application using AdMob Plus.
+
+## Basic Setup
+
+### Import and Initialize
+
+Import AdMob and initialize it when your app starts:
+
+```typescript
+import { useEffect } from 'react';
+import { AdMob } from '@admob-plus/react-native';
+
+function App() {
+  useEffect(() => {
+    AdMob.start();
+  }, []);
+
+  return (
+    // Your app content
+  );
+}
+```
+
+## Displaying Ads
+
+### Banner Ad
+
+Create a banner ad component:
+
+```typescript
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { AdMob } from '@admob-plus/react-native';
+
+function BannerAdComponent() {
+  const [banner, setBanner] = useState(null);
+
+  useEffect(() => {
+    const bannerAd = new AdMob.BannerAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+      position: 'bottom',
+    });
+
+    bannerAd.show();
+    setBanner(bannerAd);
+
+    return () => {
+      bannerAd.hide();
+    };
+  }, []);
+
+  return <View style={styles.container} />;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+
+export default BannerAdComponent;
+```
+
+<Tip>
+  Use test ad unit IDs during development. See the [Test Ads guide](/guides/test-ads).
+</Tip>
+
+### Interstitial Ad
+
+Show an interstitial ad:
+
+```typescript
+import React from 'react';
+import { Button } from 'react-native';
+import { AdMob } from '@admob-plus/react-native';
+
+function InterstitialButton() {
+  const showInterstitial = async () => {
+    const interstitial = new AdMob.InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    await interstitial.load();
+
+    if (await interstitial.isLoaded()) {
+      await interstitial.show();
+    }
+  };
+
+  return (
+    <Button title="Show Interstitial" onPress={showInterstitial} />
+  );
+}
+
+export default InterstitialButton;
+```
+
+### Rewarded Ad
+
+Implement rewarded video ads:
+
+```typescript
+import React from 'react';
+import { Button, Alert } from 'react-native';
+import { AdMob } from '@admob-plus/react-native';
+
+function RewardedAdButton() {
+  const showRewardedAd = async () => {
+    const rewarded = new AdMob.RewardedAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    rewarded.on('reward', (reward) => {
+      Alert.alert(
+        'Reward Earned',
+        `You earned ${reward.amount} ${reward.type}`
+      );
+      // Grant the reward to the user
+    });
+
+    await rewarded.load();
+
+    if (await rewarded.isLoaded()) {
+      await rewarded.show();
+    }
+  };
+
+  return (
+    <Button title="Watch Ad for Reward" onPress={showRewardedAd} />
+  );
+}
+
+export default RewardedAdButton;
+```
+
+## Event Handling
+
+Listen to ad lifecycle events:
+
+```typescript
+import { useEffect } from 'react';
+import { AdMob } from '@admob-plus/react-native';
+
+function AdComponent() {
+  useEffect(() => {
+    const interstitial = new AdMob.InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    interstitial.on('load', () => {
+      console.log('Interstitial loaded');
+    });
+
+    interstitial.on('loadfail', (error) => {
+      console.error('Interstitial failed to load:', error);
+    });
+
+    interstitial.on('show', () => {
+      console.log('Interstitial shown');
+    });
+
+    interstitial.on('dismiss', () => {
+      console.log('Interstitial dismissed');
+    });
+
+    interstitial.load();
+
+    return () => {
+      // Clean up
+    };
+  }, []);
+
+  return null;
+}
+```
+
+## Configuration
+
+### Global Configuration
+
+Configure AdMob settings:
+
+```typescript
+import { AdMob } from '@admob-plus/react-native';
+
+await AdMob.configure({
+  maxAdContentRating: 'PG',
+  tagForChildDirectedTreatment: false,
+  tagForUnderAgeOfConsent: false,
+  testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+});
+```
+
+### App Tracking Transparency (iOS)
+
+Request tracking authorization:
+
+```typescript
+import { AdMob, TrackingAuthorizationStatus } from '@admob-plus/react-native';
+
+const requestTracking = async () => {
+  const { status } = await AdMob.requestTrackingAuthorization();
+  
+  switch (status) {
+    case TrackingAuthorizationStatus.authorized:
+      console.log('Tracking authorized');
+      break;
+    case TrackingAuthorizationStatus.denied:
+      console.log('Tracking denied');
+      break;
+    case TrackingAuthorizationStatus.restricted:
+      console.log('Tracking restricted');
+      break;
+    default:
+      console.log('Tracking not determined');
+  }
+};
+```
+
+## Complete Example
+
+Here's a complete React Native app with ads:
+
+```typescript
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, Button, StyleSheet, View, Alert } from 'react-native';
+import { AdMob } from '@admob-plus/react-native';
+
+function App() {
+  const [banner, setBanner] = useState(null);
+  const [interstitial, setInterstitial] = useState(null);
+
+  useEffect(() => {
+    initializeAds();
+  }, []);
+
+  const initializeAds = async () => {
+    await AdMob.start();
+    
+    await AdMob.configure({
+      testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+    });
+
+    showBanner();
+    preloadInterstitial();
+  };
+
+  const showBanner = () => {
+    const bannerAd = new AdMob.BannerAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+      position: 'bottom',
+    });
+
+    bannerAd.show();
+    setBanner(bannerAd);
+  };
+
+  const preloadInterstitial = async () => {
+    const interstitialAd = new AdMob.InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    await interstitialAd.load();
+    setInterstitial(interstitialAd);
+  };
+
+  const showInterstitial = async () => {
+    if (interstitial && await interstitial.isLoaded()) {
+      await interstitial.show();
+      // Preload next one
+      preloadInterstitial();
+    }
+  };
+
+  const showRewarded = async () => {
+    const rewarded = new AdMob.RewardedAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    rewarded.on('reward', (reward) => {
+      Alert.alert('Reward', `You earned ${reward.amount} ${reward.type}`);
+    });
+
+    await rewarded.load();
+
+    if (await rewarded.isLoaded()) {
+      await rewarded.show();
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Button title="Show Interstitial" onPress={showInterstitial} />
+        <Button title="Show Rewarded" onPress={showRewarded} />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 20,
+  },
+});
+
+export default App;
+```
+
+## Best Practices
+
+<Check>
+  Initialize AdMob when your app starts
+</Check>
+<Check>
+  Preload interstitial and rewarded ads for instant display
+</Check>
+<Check>
+  Clean up ads in component unmount
+</Check>
+<Check>
+  Handle ad load failures gracefully
+</Check>
+<Check>
+  Request ATT authorization on iOS before showing personalized ads
+</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ad Formats" icon="rectangle-ad" href="/ad-formats/banner">
+    Explore all available ad formats
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Advanced configuration options
+  </Card>
+  <Card title="Events" icon="bolt" href="/guides/events">
+    Complete event reference
+  </Card>
+  <Card title="Consent" icon="shield-check" href="/guides/consent">
+    GDPR/CCPA compliance
+  </Card>
+</CardGroup>

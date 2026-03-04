@@ -1,0 +1,303 @@
+---
+title: MobileAd
+description: Base class for all ad formats with common functionality
+---
+
+The `MobileAd` class is the base class for all ad formats in AdMob Plus. It provides common functionality for ad lifecycle management, event handling, and ad operations.
+
+<Note>
+  You typically don't instantiate `MobileAd` directly. Instead, use specific ad format classes like `BannerAd`, `InterstitialAd`, `RewardedAd`, etc., which extend this base class.
+</Note>
+
+## Constructor
+
+```typescript
+new MobileAd(opts: MobileAdOptions)
+```
+
+### Parameters
+
+<ParamField path="opts" type="MobileAdOptions" required>
+  Configuration options for the mobile ad.
+
+  <ParamField path="opts.adUnitId" type="string" required>
+    The AdMob ad unit ID for this ad. Get this from your AdMob dashboard.
+  </ParamField>
+
+  <ParamField path="opts.id" type="string">
+    Optional unique identifier for this ad instance. If not provided, defaults to the `adUnitId`.
+  </ParamField>
+
+  <ParamField path="opts.contentUrl" type="string">
+    URL string for content that is being requested. Used for content targeting.
+  </ParamField>
+
+  <ParamField path="opts.keywords" type="string[]">
+    Array of keyword strings for targeting ads based on content.
+  </ParamField>
+
+  <ParamField path="opts.npa" type="'1'">
+    Non-personalized ads flag. Set to `'1'` to request non-personalized ads (for GDPR compliance).
+  </ParamField>
+</ParamField>
+
+## Properties
+
+### id
+
+<ResponseField name="id" type="string" readonly>
+  Unique identifier for this ad instance. Either the provided `id` option or the `adUnitId`.
+</ResponseField>
+
+### adUnitId
+
+<ResponseField name="adUnitId" type="string" readonly>
+  The AdMob ad unit ID for this ad.
+</ResponseField>
+
+## Methods
+
+### on()
+
+Registers an event listener for ad events. Returns a cleanup function to unregister the listener.
+
+```typescript
+on(
+  eventName: string,
+  callback: EventListener,
+  options?: AddEventListenerOptions
+): () => void
+```
+
+#### Parameters
+
+<ParamField path="eventName" type="string" required>
+  The name of the event to listen for. Common events include:
+  - `'load'` - Ad loaded successfully
+  - `'loadfail'` - Ad failed to load
+  - `'show'` - Ad shown to user
+  - `'showfail'` - Ad failed to show
+  - `'dismiss'` - Ad dismissed by user
+  - `'impression'` - Ad impression recorded
+  - `'click'` - User clicked on ad
+  - `'reward'` - User earned reward (for rewarded ads)
+</ParamField>
+
+<ParamField path="callback" type="EventListener" required>
+  Function called when the event occurs. Receives an event object with ad details.
+</ParamField>
+
+<ParamField path="options" type="AddEventListenerOptions">
+  Optional event listener options (e.g., `{ once: true }` for one-time listeners).
+</ParamField>
+
+#### Returns
+
+<ResponseField type="() => void">
+  A cleanup function that removes the event listener when called.
+</ResponseField>
+
+#### Example
+
+```typescript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+});
+
+// Register event listeners
+const removeLoadListener = banner.on('load', (evt) => {
+  console.log('Banner loaded:', evt);
+});
+
+const removeErrorListener = banner.on('loadfail', (evt) => {
+  console.error('Banner failed to load:', evt);
+});
+
+// Later: clean up listeners
+removeLoadListener();
+removeErrorListener();
+```
+
+### getAdById()
+
+Static method to retrieve an ad instance by its ID.
+
+```typescript
+static getAdById(id: string): MobileAd | undefined
+```
+
+#### Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the ad instance to retrieve.
+</ParamField>
+
+#### Returns
+
+<ResponseField type="MobileAd | undefined">
+  The ad instance with the specified ID, or `undefined` if not found.
+</ResponseField>
+
+#### Example
+
+```typescript
+const banner = new admob.BannerAd({
+  id: 'my-banner',
+  adUnitId: 'ca-app-pub-xxx/yyy'
+});
+
+// Later, retrieve the ad by ID
+const ad = admob.BannerAd.getAdById('my-banner');
+console.log(ad === banner); // true
+```
+
+## Protected Methods
+
+The following methods are protected and available to subclasses. Specific ad format classes expose these as public methods with appropriate signatures.
+
+### load()
+
+Loads the ad from AdMob servers.
+
+```typescript
+protected load(): Promise<void>
+```
+
+Ad format subclasses typically override or expose this method publicly.
+
+### show()
+
+Shows the loaded ad to the user.
+
+```typescript
+protected show(opts?: Record<string, unknown>): Promise<void>
+```
+
+#### Parameters
+
+<ParamField path="opts" type="Record<string, unknown>">
+  Optional ad format-specific options for showing the ad.
+</ParamField>
+
+### hide()
+
+Hides the ad from view (primarily used for banner ads).
+
+```typescript
+protected hide(): Promise<void>
+```
+
+### isLoaded()
+
+Checks if the ad is currently loaded and ready to show.
+
+```typescript
+protected isLoaded(): Promise<boolean>
+```
+
+#### Returns
+
+<ResponseField type="boolean">
+  `true` if the ad is loaded, `false` otherwise.
+</ResponseField>
+
+## Type Definitions
+
+```typescript
+interface MobileAdOptions {
+  id?: string;
+  adUnitId: string;
+  contentUrl?: string;
+  keywords?: string[];
+  npa?: '1';
+}
+
+class MobileAd<T extends MobileAdOptions = MobileAdOptions> {
+  readonly id: string;
+  readonly adUnitId: string;
+  
+  constructor(opts: T);
+  
+  on(
+    eventName: string,
+    callback: EventListener,
+    options?: AddEventListenerOptions
+  ): () => void;
+  
+  static getAdById(id: string): MobileAd | undefined;
+  
+  protected load(): Promise<void>;
+  protected show(opts?: Record<string, unknown>): Promise<void>;
+  protected hide(): Promise<void>;
+  protected isLoaded(): Promise<boolean>;
+}
+```
+
+## Event System
+
+All ad events follow a consistent naming pattern:
+
+```typescript
+// Event type format: 'admob.ad.{eventName}'
+// Example event types:
+// - 'admob.ad.load'
+// - 'admob.ad.loadfail'
+// - 'admob.ad.show'
+// - 'admob.ad.dismiss'
+```
+
+Events are filtered by ad ID, so listeners only receive events for the specific ad instance they're registered on.
+
+## Usage Example
+
+```typescript
+import { InterstitialAd } from 'admob-plus-cordova';
+
+// Create an interstitial ad (extends MobileAd)
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  id: 'my-interstitial',
+  keywords: ['game', 'puzzle'],
+  contentUrl: 'https://example.com/game'
+});
+
+// Set up event listeners
+interstitial.on('load', () => {
+  console.log('Interstitial loaded');
+});
+
+interstitial.on('loadfail', (evt) => {
+  console.error('Failed to load:', evt);
+});
+
+interstitial.on('dismiss', () => {
+  console.log('User dismissed the ad');
+});
+
+// Load the ad
+await interstitial.load();
+
+// Show when ready
+await interstitial.show();
+
+// Later: retrieve by ID
+const ad = InterstitialAd.getAdById('my-interstitial');
+```
+
+## Ad Lifecycle
+
+All ads following the MobileAd pattern go through this lifecycle:
+
+1. **Create** - Instantiate the ad class with options
+2. **Initialize** - Internal initialization (happens automatically)
+3. **Load** - Request ad from AdMob servers
+4. **Show** - Display the ad to the user
+5. **Dismiss/Hide** - Ad is closed or hidden
+
+```typescript
+// Typical lifecycle
+const ad = new admob.RewardedAd({ adUnitId: 'ca-app-pub-xxx/yyy' });
+await ad.load();      // Load from server
+await ad.show();      // Show to user
+// User dismisses ad -> 'dismiss' event fires
+```

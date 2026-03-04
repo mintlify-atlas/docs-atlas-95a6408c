@@ -1,0 +1,255 @@
+---
+title: BannerAd
+description: API reference for the BannerAd class
+---
+
+<RequestExample>
+```typescript
+import { BannerAd, AdSizeType } from 'admob-plus-cordova'
+
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  position: 'bottom',
+  size: AdSizeType.ADAPTIVE_BANNER
+})
+
+await banner.show()
+```
+</RequestExample>
+
+BannerAd displays banner advertisements at the top or bottom of the screen. Banners remain on screen while users interact with the app.
+
+## Constructor
+
+<ParamField path="options" type="BannerAdOptions" required>
+  Configuration options for the banner ad
+  
+  <Expandable title="properties">
+    <ParamField path="adUnitId" type="string" required>
+      Your AdMob ad unit ID
+    </ParamField>
+    
+    <ParamField path="position" type="'top' | 'bottom'" default="'bottom'">
+      Position of the banner on screen
+    </ParamField>
+    
+    <ParamField path="size" type="BannerSize" default="AdSizeType.SMART_BANNER">
+      Size of the banner ad. Can be one of:
+      - `AdSizeType.BANNER` - Standard banner (320x50)
+      - `AdSizeType.LARGE_BANNER` - Large banner (320x100)
+      - `AdSizeType.MEDIUM_RECTANGLE` - Medium rectangle (300x250)
+      - `AdSizeType.FULL_BANNER` - Full banner (468x60)
+      - `AdSizeType.LEADERBOARD` - Leaderboard (728x90)
+      - `AdSizeType.SMART_BANNER` - Smart banner (screen width x 32|50|90)
+      - `{ width: number, height: number }` - Custom size
+      - `{ adaptive: 'anchored', orientation?: 'portrait' | 'landscape', width?: number }` - Adaptive anchored banner
+      - `{ adaptive: 'inline', maxHeight: number, width?: number }` - Adaptive inline banner
+    </ParamField>
+    
+    <ParamField path="offset" type="number">
+      Offset in pixels from the position edge
+    </ParamField>
+    
+    <ParamField path="id" type="string">
+      Custom identifier for the ad instance. Defaults to `adUnitId`
+    </ParamField>
+    
+    <ParamField path="contentUrl" type="string">
+      Content URL for targeting purposes
+    </ParamField>
+    
+    <ParamField path="keywords" type="string[]">
+      Keywords for ad targeting
+    </ParamField>
+    
+    <ParamField path="npa" type="'1'">
+      Set to '1' to enable non-personalized ads (for GDPR compliance)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Methods
+
+### show()
+
+Displays the banner ad. If the ad is not loaded, it will load automatically before showing.
+
+```typescript
+await banner.show()
+```
+
+**Returns:** `Promise<void>`
+
+### hide()
+
+Hides the banner ad from view without destroying it.
+
+```typescript
+await banner.hide()
+```
+
+**Returns:** `Promise<void>`
+
+### load()
+
+Loads the banner ad. This is called automatically by `show()` if needed.
+
+```typescript
+await banner.load()
+```
+
+**Returns:** `Promise<void>`
+
+### on()
+
+Registers an event listener for ad events.
+
+```typescript
+const unsubscribe = banner.on('load', (event) => {
+  console.log('Banner loaded', event)
+})
+
+// Later, to remove the listener:
+unsubscribe()
+```
+
+<ParamField path="eventName" type="string" required>
+  Name of the event to listen for
+</ParamField>
+
+<ParamField path="callback" type="function" required>
+  Function to call when the event occurs
+</ParamField>
+
+**Returns:** `() => void` - Function to remove the event listener
+
+## Static Methods
+
+### config()
+
+Configures global banner appearance settings (iOS only).
+
+```typescript
+BannerAd.config({
+  backgroundColor: '#ffffff',
+  marginTop: 0,
+  marginBottom: 0
+})
+```
+
+<ParamField path="options" type="object" required>
+  <Expandable title="properties">
+    <ParamField path="backgroundColor" type="string">
+      Background color as a CSS color string
+    </ParamField>
+    
+    <ParamField path="marginTop" type="number">
+      Top margin in pixels
+    </ParamField>
+    
+    <ParamField path="marginBottom" type="number">
+      Bottom margin in pixels
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+**Returns:** `Promise<void> | false` - Promise on iOS, false on other platforms
+
+## Properties
+
+<ResponseField name="id" type="string">
+  The unique identifier for this ad instance
+</ResponseField>
+
+<ResponseField name="adUnitId" type="string">
+  The AdMob ad unit ID
+</ResponseField>
+
+## AdSizeType Enum
+
+```typescript
+enum AdSizeType {
+  BANNER = 0,           // 320x50
+  LARGE_BANNER = 1,     // 320x100
+  MEDIUM_RECTANGLE = 2, // 300x250
+  FULL_BANNER = 3,      // 468x60
+  LEADERBOARD = 4,      // 728x90
+  SMART_BANNER = 5      // Full screen width
+}
+```
+
+## Examples
+
+### Basic Banner
+
+```typescript
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await banner.show()
+```
+
+### Top Banner with Custom Size
+
+```typescript
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  position: 'top',
+  size: AdSizeType.LEADERBOARD
+})
+
+await banner.show()
+```
+
+### Adaptive Banner
+
+```typescript
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  size: {
+    adaptive: 'anchored',
+    orientation: 'portrait'
+  }
+})
+
+await banner.show()
+```
+
+### Banner with Event Listeners
+
+```typescript
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+banner.on('load', () => {
+  console.log('Banner loaded')
+})
+
+banner.on('loadfail', (event) => {
+  console.error('Banner failed to load', event.error)
+})
+
+banner.on('impression', () => {
+  console.log('Banner impression recorded')
+})
+
+await banner.show()
+```
+
+### Hide and Show Banner
+
+```typescript
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await banner.show()
+
+// Hide the banner
+await banner.hide()
+
+// Show it again
+await banner.show()
+```

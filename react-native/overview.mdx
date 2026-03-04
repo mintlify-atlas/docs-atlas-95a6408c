@@ -1,0 +1,84 @@
+---
+title: React Native Overview
+description: AdMob Plus integration for React Native
+---
+
+AdMob Plus provides a native module for integrating Google AdMob into your React Native applications.
+
+## Package Information
+
+**Package Name:** `@admob-plus/react-native`
+
+**Version:** 2.0.0-alpha.2
+
+**React Native Compatibility:** 0.60.0+
+
+**Platforms:** Android, iOS
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Native Module" icon="react">
+    Built as a native React Native module
+  </Card>
+  <Card title="TypeScript Support" icon="code">
+    Full TypeScript definitions included
+  </Card>
+  <Card title="All Ad Formats" icon="rectangle-ad">
+    Banner, Interstitial, Rewarded, and more
+  </Card>
+  <Card title="Auto-Linking" icon="link">
+    Supports React Native auto-linking
+  </Card>
+</CardGroup>
+
+## What You'll Learn
+
+This section covers React Native integration:
+
+- [Installation](/react-native/installation) - Add the package to your project
+- [Usage](/react-native/usage) - Implement ads in your React Native app
+
+## Package Architecture
+
+The package provides JavaScript/TypeScript APIs that communicate with native AdMob SDKs:
+
+```typescript
+import { AdMob } from '@admob-plus/react-native';
+
+// Initialize
+await AdMob.start();
+
+// Use ads in your components
+const banner = new AdMob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+```
+
+## React Native Compatibility
+
+- **React Native:** 0.60.0+
+- **React:** 16.8.1+
+- **iOS:** 12.0+
+- **Android:** API 21+
+
+## Repository
+
+<Card
+  title="View on GitHub"
+  icon="github"
+  href="https://github.com/admob-plus/admob-plus"
+>
+  Open source and actively maintained
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/react-native/installation">
+    Install the package in your React Native project
+  </Card>
+  <Card title="Usage Guide" icon="book" href="/react-native/usage">
+    Learn how to display ads
+  </Card>
+</CardGroup>

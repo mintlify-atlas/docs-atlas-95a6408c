@@ -1,0 +1,339 @@
+---
+title: User Consent Management
+description: Implement GDPR and CCPA compliance with Google's User Messaging Platform
+---
+
+## Overview
+
+The AdMob Plus Consent plugin helps you comply with privacy regulations like GDPR and CCPA by integrating Google's User Messaging Platform (UMP) SDK. This allows you to request user consent before showing personalized ads.
+
+<Note>
+  The consent plugin is a separate package: `cordova-plugin-consent`
+</Note>
+
+## Installation
+
+Install the consent plugin alongside AdMob Plus:
+
+```bash
+cordova plugin add cordova-plugin-consent
+```
+
+## Consent Flow
+
+The typical consent flow involves:
+
+1. Request consent information update
+2. Check if consent form is required
+3. Load and show consent form if needed
+4. Check if you can request ads
+5. Initialize AdMob and request ads
+
+## Basic Implementation
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  try {
+    // 1. Request consent information update
+    await consent.requestInfoUpdate();
+
+    // 2. Check form status
+    const formStatus = await consent.getFormStatus();
+    
+    if (formStatus === consent.FormStatus.Available) {
+      // 3. Load and show consent form
+      const form = await consent.loadForm();
+      await form.show();
+    }
+
+    // 4. Check if we can request ads
+    const canRequestAds = await consent.canRequestAds();
+    
+    if (canRequestAds) {
+      // 5. Initialize AdMob and show ads
+      await admob.start();
+      // Load your ads...
+    }
+  } catch (error) {
+    console.error('Consent error:', error);
+  }
+}, false);
+```
+
+## Consent API
+
+### Request Information Update
+
+Request updated consent information from Google:
+
+```javascript
+await consent.requestInfoUpdate({
+  debugGeography: consent.DebugGeography.EEA,
+  tagForUnderAgeOfConsent: false,
+  testDeviceIds: ['33BE2250B43518CCDA7DE426D04EE231'],
+});
+```
+
+<ParamField path="debugGeography" type="DebugGeography">
+  Override geography for testing:
+  - `DebugGeography.Disabled` - No debug geography (default)
+  - `DebugGeography.EEA` - Simulate European Economic Area
+  - `DebugGeography.NotEEA` - Simulate outside EEA
+  - `DebugGeography.RegulatedUsState` - Simulate regulated US state
+  - `DebugGeography.Other` - Other geography
+</ParamField>
+
+<ParamField path="tagForUnderAgeOfConsent" type="boolean">
+  Indicate if the user is under the age of consent.
+</ParamField>
+
+<ParamField path="testDeviceIds" type="string[]">
+  Array of test device IDs for testing consent flow.
+</ParamField>
+
+### Check Consent Status
+
+Get the current consent status:
+
+```javascript
+const status = await consent.getConsentStatus();
+
+if (status === consent.ConsentStatus.Required) {
+  console.log('Consent is required');
+} else if (status === consent.ConsentStatus.Obtained) {
+  console.log('Consent obtained');
+}
+```
+
+**ConsentStatus values:**
+- `Unknown` (0) - Consent status is unknown
+- `Required` (1) - User must provide consent
+- `NotRequired` (2) - Consent not required for this user
+- `Obtained` (3) - User has provided consent
+
+### Check Form Status
+
+Check if a consent form is available:
+
+```javascript
+const formStatus = await consent.getFormStatus();
+
+if (formStatus === consent.FormStatus.Available) {
+  // Form is available to show
+}
+```
+
+**FormStatus values:**
+- `Unknown` (0) - Form status is unknown
+- `Available` (1) - Form is available to display
+- `Unavailable` (2) - Form is not available
+
+### Load and Show Consent Form
+
+Load the consent form and display it to the user:
+
+```javascript
+// Load the form
+const form = await consent.loadForm();
+
+// Show the form
+await form.show();
+```
+
+### Simplified Flow
+
+Use `loadAndShowIfRequired()` to automatically load and show the form if needed:
+
+```javascript
+await consent.requestInfoUpdate();
+await consent.loadAndShowIfRequired();
+
+if (await consent.canRequestAds()) {
+  // Can show ads
+  await admob.start();
+}
+```
+
+### Check if Ads Can Be Requested
+
+Check if you can request ads based on consent status:
+
+```javascript
+const canRequestAds = await consent.canRequestAds();
+
+if (canRequestAds) {
+  // User has provided necessary consent
+  // Safe to initialize AdMob and request ads
+  await admob.start();
+} else {
+  // Cannot request ads - consent not obtained
+  console.log('Cannot request ads without consent');
+}
+```
+
+## Privacy Options
+
+### Check Privacy Options Requirement
+
+For CCPA compliance, check if you need to show privacy options:
+
+```javascript
+const status = await consent.privacyOptionsRequirementStatus();
+
+if (status === consent.PrivacyOptionsRequirementStatus.Required) {
+  // Show privacy options button in your app settings
+}
+```
+
+**PrivacyOptionsRequirementStatus values:**
+- `Unknown` (0) - Requirement status is unknown
+- `Required` (1) - Privacy options must be available
+- `NotRequired` (2) - Privacy options not required
+
+### Show Privacy Options Form
+
+Allow users to update their privacy preferences:
+
+```javascript
+// Add a privacy settings button in your app
+document.getElementById('privacy-settings-btn').addEventListener('click', async () => {
+  await consent.showPrivacyOptionsForm();
+});
+```
+
+## iOS App Tracking Transparency
+
+For iOS 14+, request App Tracking Transparency (ATT) permission:
+
+```javascript
+if (cordova.platformId === 'ios') {
+  const status = await consent.requestTrackingAuthorization();
+  
+  if (status === consent.TrackingAuthorizationStatus.authorized) {
+    console.log('Tracking authorized');
+  }
+}
+```
+
+**TrackingAuthorizationStatus values:**
+- `notDetermined` (0) - User hasn't been asked yet
+- `restricted` (1) - Authorization restricted by device
+- `denied` (2) - User denied authorization
+- `authorized` (3) - User authorized tracking
+
+### Check Current Tracking Status
+
+```javascript
+if (cordova.platformId === 'ios') {
+  const status = await consent.trackingAuthorizationStatus();
+  console.log('Current tracking status:', status);
+}
+```
+
+## Testing
+
+### Reset Consent for Testing
+
+Reset consent status during development:
+
+```javascript
+await consent.reset();
+console.log('Consent status reset');
+```
+
+<Warning>
+  Only use `reset()` during development. Never call this in production as it will clear user consent preferences.
+</Warning>
+
+## Complete Example
+
+Here's a complete implementation with all best practices:
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  try {
+    // iOS: Request tracking authorization first
+    if (cordova.platformId === 'ios') {
+      const attStatus = await consent.requestTrackingAuthorization();
+      console.log('ATT Status:', attStatus);
+    }
+
+    // Request consent information update
+    await consent.requestInfoUpdate({
+      // Use debug geography for testing
+      debugGeography: consent.DebugGeography.EEA,
+      testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+    });
+
+    // Check consent and form status
+    const consentStatus = await consent.getConsentStatus();
+    console.log('Consent Status:', consentStatus);
+
+    // Load and show form if required
+    await consent.loadAndShowIfRequired();
+
+    // Check if we can request ads
+    const canRequestAds = await consent.canRequestAds();
+    
+    if (canRequestAds) {
+      // Initialize AdMob
+      await admob.start();
+      await admob.configure({
+        testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+      });
+
+      // Load and show your ads
+      const banner = new admob.BannerAd({
+        adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      });
+      await banner.show();
+    } else {
+      console.log('Cannot request ads - consent not obtained');
+    }
+
+    // Check if privacy options should be available
+    const privacyStatus = await consent.privacyOptionsRequirementStatus();
+    if (privacyStatus === consent.PrivacyOptionsRequirementStatus.Required) {
+      // Show privacy settings button in your UI
+      document.getElementById('privacy-btn').style.display = 'block';
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}, false);
+
+// Handle privacy settings button
+document.getElementById('privacy-btn').addEventListener('click', async () => {
+  await consent.showPrivacyOptionsForm();
+});
+```
+
+## Events
+
+Listen for consent ready event:
+
+```javascript
+document.addEventListener('consent.ready', () => {
+  console.log('Consent plugin ready');
+}, false);
+```
+
+## Best Practices
+
+<Tip>
+  Request consent before initializing AdMob to ensure compliance with privacy regulations.
+</Tip>
+
+<Warning>
+  Always check `canRequestAds()` before showing ads. Showing ads without proper consent can result in policy violations.
+</Warning>
+
+<Note>
+  For iOS apps, request App Tracking Transparency (ATT) permission before requesting consent information.
+</Note>
+
+## Related
+
+- [Configuration](/guides/configuration) - AdMob SDK configuration
+- [Test Ads](/guides/test-ads) - Testing with demo ad units
+- [Google UMP SDK Documentation](https://developers.google.com/admob/ump/android/quick-start)

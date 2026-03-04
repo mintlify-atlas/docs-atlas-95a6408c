@@ -1,0 +1,429 @@
+---
+title: Ad Targeting
+description: Configure ad targeting options for content rating and user demographics
+---
+
+## Overview
+
+AdMob Plus provides targeting options to ensure appropriate ads are shown to your users based on content ratings, age, and other factors. These settings help you comply with regulations and improve ad relevance.
+
+## Configuration Options
+
+Targeting options can be set globally via `configure()` or per-request when creating ads. Global configuration affects all subsequent ad requests.
+
+### RequestConfig Interface
+
+The `RequestConfig` interface defines targeting options:
+
+```typescript
+interface RequestConfig {
+  maxAdContentRating?: MaxAdContentRating;
+  tagForChildDirectedTreatment?: boolean | null;
+  tagForUnderAgeOfConsent?: boolean | null;
+  testDeviceIds?: string[];
+}
+```
+
+## Max Ad Content Rating
+
+Set the maximum ad content rating for your app to control the maturity level of ads shown.
+
+### Rating Values
+
+<ParamField path="maxAdContentRating" type="MaxAdContentRating">
+  Maximum ad content rating:
+  - `'G'` - General audiences (suitable for all ages, including families)
+  - `'PG'` - Parental guidance suggested (suitable for most audiences)
+  - `'T'` - Teen (suitable for ages 13 and older)
+  - `'MA'` - Mature audiences only (suitable for ages 17 and older)
+  - `''` - Unspecified (default, no content rating filter)
+</ParamField>
+
+### Usage
+
+```javascript
+// Set globally for all ads
+await admob.configure({
+  maxAdContentRating: 'PG',
+});
+```
+
+### Examples by App Type
+
+```javascript
+// Family-friendly app
+await admob.configure({
+  maxAdContentRating: 'G',
+});
+
+// General audience app
+await admob.configure({
+  maxAdContentRating: 'PG',
+});
+
+// Teen-focused app
+await admob.configure({
+  maxAdContentRating: 'T',
+});
+
+// Mature content app
+await admob.configure({
+  maxAdContentRating: 'MA',
+});
+```
+
+<Note>
+  Content ratings follow industry standards similar to movie/TV ratings (MPAA, TV Parental Guidelines).
+</Note>
+
+## Child-Directed Treatment
+
+Indicate whether your app's content is directed at children under 13 (COPPA compliance).
+
+### Configuration
+
+<ParamField path="tagForChildDirectedTreatment" type="boolean | null">
+  Tag for child-directed treatment:
+  - `true` - Content is directed at children under 13
+  - `false` - Content is not directed at children under 13
+  - `null` - You have not indicated how you want your content treated (default)
+</ParamField>
+
+### Usage
+
+```javascript
+// App directed at children
+await admob.configure({
+  tagForChildDirectedTreatment: true,
+  maxAdContentRating: 'G', // Recommended for child-directed apps
+});
+
+// App NOT directed at children
+await admob.configure({
+  tagForChildDirectedTreatment: false,
+});
+
+// Mixed audience (unspecified)
+await admob.configure({
+  tagForChildDirectedTreatment: null, // Default
+});
+```
+
+<Warning>
+  When set to `true`, ads will be limited to those appropriate for children. This may reduce ad revenue but is required for COPPA compliance.
+</Warning>
+
+## Under Age of Consent
+
+Indicate whether users are under the age of consent for GDPR purposes (typically 16 in most EU countries).
+
+### Configuration
+
+<ParamField path="tagForUnderAgeOfConsent" type="boolean | null">
+  Tag for users under age of consent:
+  - `true` - Users are under the age of consent
+  - `false` - Users are not under the age of consent
+  - `null` - Not specified (default)
+</ParamField>
+
+### Usage
+
+```javascript
+// Users under age of consent
+await admob.configure({
+  tagForUnderAgeOfConsent: true,
+});
+
+// Users not under age of consent
+await admob.configure({
+  tagForUnderAgeOfConsent: false,
+});
+```
+
+<Note>
+  This setting affects how consent is collected and what data can be used for ad personalization under GDPR.
+</Note>
+
+## Per-Ad Targeting
+
+While less common, you can set targeting options per ad request by extending the ad options:
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+  // RequestConfig options can be passed here
+  // (requires custom implementation or future SDK support)
+});
+```
+
+## Additional Ad Options
+
+When creating ads, you can also set these targeting parameters:
+
+### Content URL
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+  contentUrl: 'https://example.com/article/123',
+});
+```
+
+<ParamField path="contentUrl" type="string">
+  URL string for a webpage whose content matches the app content. Used for keyword targeting.
+</ParamField>
+
+### Keywords
+
+```javascript
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+  keywords: ['sports', 'basketball', 'news'],
+});
+```
+
+<ParamField path="keywords" type="string[]">
+  Array of keywords for keyword targeting. Helps serve more relevant ads.
+</ParamField>
+
+### Non-Personalized Ads
+
+```javascript
+const rewarded = new admob.RewardedAd({
+  adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+  npa: '1', // Request non-personalized ads
+});
+```
+
+<ParamField path="npa" type="'1'">
+  Set to `'1'` to request non-personalized ads (no behavioral targeting). Used for GDPR compliance when users don't consent to personalized ads.
+</ParamField>
+
+## Complete Examples
+
+### Family-Friendly App
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  await admob.start();
+  
+  // Configure for children
+  await admob.configure({
+    maxAdContentRating: 'G',
+    tagForChildDirectedTreatment: true,
+    testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+  });
+  
+  // All ads will now be child-appropriate
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+  });
+  await banner.show();
+}, false);
+```
+
+### Teen App with Keywords
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  await admob.start();
+  
+  // Configure for teens
+  await admob.configure({
+    maxAdContentRating: 'T',
+    tagForChildDirectedTreatment: false,
+  });
+  
+  // Banner with keyword targeting
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+    keywords: ['gaming', 'esports', 'streaming'],
+  });
+  await banner.show();
+  
+  // Interstitial with content URL
+  const interstitial = new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+    contentUrl: 'https://example.com/games',
+  });
+  await interstitial.load();
+}, false);
+```
+
+### European User Under Age of Consent
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  await admob.start();
+  
+  // User is under age of consent in EU
+  await admob.configure({
+    maxAdContentRating: 'PG',
+    tagForUnderAgeOfConsent: true,
+  });
+  
+  // Request non-personalized ads
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+    npa: '1', // Non-personalized ads only
+  });
+  await banner.show();
+}, false);
+```
+
+### Dynamic Configuration Based on User
+
+```javascript
+function configureForUser(user) {
+  const config = {
+    testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+  };
+  
+  // Adjust based on user age
+  if (user.age < 13) {
+    config.maxAdContentRating = 'G';
+    config.tagForChildDirectedTreatment = true;
+  } else if (user.age < 18) {
+    config.maxAdContentRating = 'T';
+    config.tagForChildDirectedTreatment = false;
+  } else {
+    config.maxAdContentRating = 'MA';
+    config.tagForChildDirectedTreatment = false;
+  }
+  
+  // GDPR: Check age of consent (16 in most EU countries)
+  if (user.region === 'EU' && user.age < 16) {
+    config.tagForUnderAgeOfConsent = true;
+  }
+  
+  return admob.configure(config);
+}
+
+// Usage
+document.addEventListener('deviceready', async () => {
+  await admob.start();
+  
+  const user = getCurrentUser();
+  await configureForUser(user);
+  
+  // Load ads
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+    // Add npa if user hasn't consented to personalized ads
+    npa: user.hasConsentedToAds ? undefined : '1',
+  });
+  await banner.show();
+}, false);
+```
+
+## Server-Side Verification (Rewarded Ads)
+
+For rewarded ads, you can add server-side verification parameters:
+
+```javascript
+const rewarded = new admob.RewardedAd({
+  adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+  serverSideVerification: {
+    userId: 'user123',
+    customData: 'level5_reward',
+  },
+});
+
+await rewarded.load();
+await rewarded.show();
+```
+
+<ParamField path="serverSideVerification.userId" type="string">
+  User identifier for server-side verification callbacks.
+</ParamField>
+
+<ParamField path="serverSideVerification.customData" type="string">
+  Custom data to include in server-side verification callbacks.
+</ParamField>
+
+## Compliance Guidelines
+
+### COPPA (Children's Online Privacy Protection Act)
+
+<Check>
+  Set `tagForChildDirectedTreatment: true` if your app targets children under 13
+</Check>
+
+<Check>
+  Use `maxAdContentRating: 'G'` for child-directed apps
+</Check>
+
+<Check>
+  Ensure your privacy policy complies with COPPA requirements
+</Check>
+
+### GDPR (General Data Protection Regulation)
+
+<Check>
+  Set `tagForUnderAgeOfConsent: true` for EU users under 16
+</Check>
+
+<Check>
+  Use `npa: '1'` when users haven't consented to personalized ads
+</Check>
+
+<Check>
+  Implement proper consent flow (see [Consent Guide](/guides/consent))
+</Check>
+
+### Best Practices
+
+<Tip>
+  Set content rating based on your app's content, not your desired revenue.
+</Tip>
+
+<Tip>
+  Be conservative with age-related settings - err on the side of caution.
+</Tip>
+
+<Warning>
+  Misrepresenting your app's audience or content can result in policy violations and account suspension.
+</Warning>
+
+<Note>
+  When in doubt about which settings to use, consult with legal counsel familiar with advertising regulations.
+</Note>
+
+## Testing
+
+Test your targeting configuration:
+
+```javascript
+// Test different content ratings
+const testConfigs = [
+  { name: 'General', maxAdContentRating: 'G' },
+  { name: 'Parental Guidance', maxAdContentRating: 'PG' },
+  { name: 'Teen', maxAdContentRating: 'T' },
+  { name: 'Mature', maxAdContentRating: 'MA' },
+];
+
+for (const config of testConfigs) {
+  console.log(`Testing: ${config.name}`);
+  await admob.configure({
+    ...config,
+    testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+  });
+  
+  // Load and inspect ads
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+  });
+  await banner.show();
+  
+  // Wait and observe
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  await banner.hide();
+}
+```
+
+## Related
+
+- [Configuration](/guides/configuration) - General SDK configuration
+- [Consent](/guides/consent) - User consent management for GDPR/CCPA
+- [Test Ads](/guides/test-ads) - Testing ads during development
+- [AdMob Policy Guidelines](https://support.google.com/admob/answer/6128543)

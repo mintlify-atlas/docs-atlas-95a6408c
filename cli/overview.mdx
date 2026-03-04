@@ -1,0 +1,112 @@
+---
+title: CLI Overview
+description: Command-line interface for AdMob Plus development and project management
+---
+
+The AdMob Plus CLI is a command-line tool that helps you manage AdMob Plus projects, diagnose issues, and install plugins across different frameworks.
+
+## What is the CLI?
+
+The AdMob Plus CLI (`admob-plus`) provides utilities to:
+
+- Diagnose project setup issues with `doctor`
+- Gather environment information for bug reports with `info`
+- Install AdMob Plus plugins for your framework with `install`
+- Get Google's test ad IDs for development with `test-ids`
+
+## Installation
+
+<Steps>
+  <Step title="Install globally via npm">
+    Install the CLI globally to use it across all your projects:
+
+    ```bash
+    npm install -g admob-plus
+    ```
+  </Step>
+
+  <Step title="Verify installation">
+    Check that the CLI is installed correctly:
+
+    ```bash
+    admob-plus --version
+    ```
+  </Step>
+
+  <Step title="Get help">
+    View all available commands:
+
+    ```bash
+    admob-plus --help
+    ```
+  </Step>
+</Steps>
+
+## Requirements
+
+- Node.js 18.0.0 or higher
+- npm or yarn package manager
+
+## Quick Start
+
+After installation, navigate to your project directory and run commands:
+
+```bash
+# Install AdMob Plus for your project type
+admob-plus install
+
+# Check for potential setup issues
+admob-plus doctor
+
+# Get test ad IDs for development
+admob-plus test-ids
+```
+
+## Global Options
+
+All commands support these global options:
+
+| Option | Description | Default |
+|--------|-------------|----------|
+| `--cwd` | Working directory for the command | `.` (current directory) |
+| `--help` | Show help information | - |
+| `--version` | Show version number | - |
+
+## Example Usage
+
+<CodeGroup>
+```bash Run from different directory
+# Run doctor command in a specific directory
+admob-plus --cwd ~/projects/my-app doctor
+```
+
+```bash Get version info
+# Check CLI version
+admob-plus --version
+```
+
+```bash Get command help
+# Get help for a specific command
+admob-plus install --help
+```
+</CodeGroup>
+
+## Supported Frameworks
+
+The CLI supports installation and project detection for:
+
+- **Cordova** - Native Cordova projects
+- **Capacitor** - Capacitor-based apps
+- **Ionic** - Ionic framework projects  
+- **React Native** - React Native applications
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Commands Reference" icon="terminal" href="/cli/commands">
+    Explore all available CLI commands with examples
+  </Card>
+  <Card title="Plugin Installation" icon="download" href="/cordova/installation">
+    Learn how to install AdMob Plus in your project
+  </Card>
+</CardGroup>

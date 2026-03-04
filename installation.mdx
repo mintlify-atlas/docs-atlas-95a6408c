@@ -1,0 +1,402 @@
+---
+title: Installation
+description: Install AdMob Plus for Cordova, Capacitor, React Native, and Ionic
+---
+
+## Prerequisites
+
+Before installing AdMob Plus, ensure you have:
+
+1. **Google AdMob Account** - [Sign up](https://admob.google.com/) if you don't have one
+2. **AdMob App ID** - Create an app in your AdMob dashboard to get your App ID
+3. **Ad Unit IDs** - Create ad units for the ad types you want to display
+
+<Note>
+  Your AdMob App ID looks like `ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY`. You'll need separate IDs for Android and iOS.
+</Note>
+
+## Framework-Specific Installation
+
+Choose your framework to see installation instructions:
+
+<Tabs>
+  <Tab title="Cordova">
+    ### Install the Plugin
+
+    <CodeGroup>
+    ```bash npm
+    cordova plugin add admob-plus-cordova --save
+    ```
+
+    ```bash yarn
+    cordova plugin add admob-plus-cordova --save
+    ```
+
+    ```bash pnpm
+    cordova plugin add admob-plus-cordova --save
+    ```
+    </CodeGroup>
+
+    ### Configure App IDs
+
+    Add your AdMob App IDs to `package.json`:
+
+    ```json package.json
+    {
+      "cordova": {
+        "plugins": {
+          "admob-plus-cordova": {
+            "APP_ID_ANDROID": "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY",
+            "APP_ID_IOS": "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY"
+          }
+        }
+      }
+    }
+    ```
+
+    Or configure during installation:
+
+    ```bash
+    cordova plugin add admob-plus-cordova \
+      --variable APP_ID_ANDROID="ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY" \
+      --variable APP_ID_IOS="ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY"
+    ```
+
+    ### TypeScript Support
+
+    AdMob Plus includes TypeScript definitions out of the box. The global `admob` object is automatically available:
+
+    ```typescript
+    import type { AdMob, BannerAd, InterstitialAd } from 'admob-plus-cordova'
+
+    declare const admob: AdMob
+    ```
+
+    ### Platform Requirements
+
+    - **Android**: Minimum SDK version 21 (Android 5.0)
+    - **iOS**: Minimum iOS version 12.0
+    - **Cordova**: Version 9.0.0 or higher
+
+  </Tab>
+
+  <Tab title="Capacitor">
+    ### Install the Package
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/capacitor
+    npx cap sync
+    ```
+
+    ```bash yarn  
+    yarn add @admob-plus/capacitor
+    npx cap sync
+    ```
+
+    ```bash pnpm
+    pnpm add @admob-plus/capacitor
+    npx cap sync
+    ```
+    </CodeGroup>
+
+    ### Configure Android
+
+    Add your AdMob App ID to `android/app/src/main/AndroidManifest.xml`:
+
+    ```xml AndroidManifest.xml
+    <manifest>
+      <application>
+        <meta-data
+          android:name="com.google.android.gms.ads.APPLICATION_ID"
+          android:value="ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY" />
+      </application>
+    </manifest>
+    ```
+
+    ### Configure iOS
+
+    Add your AdMob App ID to `ios/App/App/Info.plist`:
+
+    ```xml Info.plist
+    <dict>
+      <key>GADApplicationIdentifier</key>
+      <string>ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY</string>
+    </dict>
+    ```
+
+    ### TypeScript Support
+
+    Import the plugin and ad classes:
+
+    ```typescript
+    import { AdMobPlus, BannerAd, InterstitialAd, RewardedAd } from '@admob-plus/capacitor'
+
+    // Type-safe API
+    await AdMobPlus.start()
+    ```
+
+    ### Platform Requirements
+
+    - **Android**: Minimum SDK version 21 (Android 5.0)
+    - **iOS**: Minimum iOS version 12.0
+    - **Capacitor**: Version 3.0.0 or higher
+
+  </Tab>
+
+  <Tab title="React Native">
+    ### Install the Package
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/react-native
+    ```
+
+    ```bash yarn
+    yarn add @admob-plus/react-native
+    ```
+
+    ```bash pnpm
+    pnpm add @admob-plus/react-native
+    ```
+    </CodeGroup>
+
+    ### Link Native Dependencies
+
+    For React Native 0.60+, dependencies are auto-linked. For older versions:
+
+    ```bash
+    react-native link @admob-plus/react-native
+    ```
+
+    ### Configure Android
+
+    Add your AdMob App ID to `android/app/src/main/AndroidManifest.xml`:
+
+    ```xml AndroidManifest.xml
+    <manifest>
+      <application>
+        <meta-data
+          android:name="com.google.android.gms.ads.APPLICATION_ID"
+          android:value="ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY" />
+      </application>
+    </manifest>
+    ```
+
+    ### Configure iOS
+
+    1. Add your AdMob App ID to `ios/YourApp/Info.plist`:
+
+    ```xml Info.plist
+    <dict>
+      <key>GADApplicationIdentifier</key>
+      <string>ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY</string>
+    </dict>
+    ```
+
+    2. Install CocoaPods dependencies:
+
+    ```bash
+    cd ios && pod install && cd ..
+    ```
+
+    ### TypeScript Support
+
+    Full TypeScript support is included:
+
+    ```typescript
+    import AdMob, { InterstitialAd, RewardedAd, eventEmitter } from '@admob-plus/react-native'
+
+    // Type-safe API with autocompletion
+    const ad = new InterstitialAd({ adUnitId: 'ca-app-pub-xxx' })
+    ```
+
+    ### Platform Requirements
+
+    - **Android**: Minimum SDK version 21 (Android 5.0)
+    - **iOS**: Minimum iOS version 12.0
+    - **React Native**: Version 0.60.0 or higher
+    - **React**: Version 16.8.1 or higher
+
+  </Tab>
+
+  <Tab title="Ionic">
+    ### Install the Packages
+
+    <Warning>
+      The `@admob-plus/ionic` package is deprecated. For Cordova-based Ionic apps, use `admob-plus-cordova` directly. For Capacitor-based Ionic apps, use `@admob-plus/capacitor`.
+    </Warning>
+
+    #### For Ionic with Cordova
+
+    <CodeGroup>
+    ```bash npm
+    ionic cordova plugin add admob-plus-cordova
+    npm install admob-plus-cordova
+    ```
+
+    ```bash yarn
+    ionic cordova plugin add admob-plus-cordova
+    yarn add admob-plus-cordova
+    ```
+
+    ```bash pnpm
+    ionic cordova plugin add admob-plus-cordova
+    pnpm add admob-plus-cordova
+    ```
+    </CodeGroup>
+
+    #### For Ionic with Capacitor
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/capacitor
+    npx cap sync
+    ```
+
+    ```bash yarn
+    yarn add @admob-plus/capacitor
+    npx cap sync
+    ```
+
+    ```bash pnpm
+    pnpm add @admob-plus/capacitor
+    npx cap sync
+    ```
+    </CodeGroup>
+
+    ### Configure App IDs (Cordova)
+
+    Add to `package.json`:
+
+    ```json package.json
+    {
+      "cordova": {
+        "plugins": {
+          "admob-plus-cordova": {
+            "APP_ID_ANDROID": "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY",
+            "APP_ID_IOS": "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY"
+          }
+        }
+      }
+    }
+    ```
+
+    ### Configure App IDs (Capacitor)
+
+    Follow the Capacitor tab instructions above for Android and iOS configuration.
+
+    ### TypeScript Configuration
+
+    For Ionic Angular users, you may need to update TypeScript or add to `tsconfig.json`:
+
+    ```json tsconfig.json
+    {
+      "compilerOptions": {
+        "skipLibCheck": true
+      }
+    }
+    ```
+
+    ### Platform Requirements
+
+    - **Android**: Minimum SDK version 21 (Android 5.0)
+    - **iOS**: Minimum iOS version 12.0
+    - **Ionic**: Version 4.0.0 or higher
+    - **Angular**: Version 8.0.0 or higher (for Ionic Angular)
+
+  </Tab>
+</Tabs>
+
+## Verify Installation
+
+After installation, verify that AdMob Plus is properly configured:
+
+<Steps>
+  <Step title="Check Native Dependencies">
+    Ensure the native SDKs are properly linked:
+
+    **Android**: Look for `com.google.android.gms:play-services-ads` in your dependencies
+
+    **iOS**: Verify `GoogleMobileAds` framework is included
+  </Step>
+
+  <Step title="Build Your App">
+    Build your app to ensure no configuration errors:
+
+    ```bash
+    # Cordova
+    cordova build android
+    cordova build ios
+
+    # Capacitor
+    npx cap build android
+    npx cap build ios
+
+    # React Native
+    npx react-native run-android
+    npx react-native run-ios
+    ```
+  </Step>
+
+  <Step title="Test Ad Initialization">
+    Add a simple initialization test to verify the SDK loads:
+
+    ```typescript
+    // Cordova/Ionic
+    admob.start().then(() => console.log('AdMob initialized'))
+
+    // Capacitor
+    import { AdMobPlus } from '@admob-plus/capacitor'
+    AdMobPlus.start().then(() => console.log('AdMob initialized'))
+
+    // React Native
+    import AdMob from '@admob-plus/react-native'
+    AdMob.start().then(() => console.log('AdMob initialized'))
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Build errors on Android">
+    If you encounter build errors related to Google Play Services:
+
+    1. Ensure your `build.gradle` has the correct Google Play Services version
+    2. Check that your Android SDK Build Tools are up to date
+    3. Try cleaning your build: `./gradlew clean`
+  </Accordion>
+
+  <Accordion title="Build errors on iOS">
+    If you encounter CocoaPods or framework errors:
+
+    1. Update CocoaPods: `sudo gem install cocoapods`
+    2. Clean pods: `cd ios && pod deintegrate && pod install`
+    3. Clean build folder in Xcode: Product → Clean Build Folder
+  </Accordion>
+
+  <Accordion title="TypeScript errors">
+    If you see TypeScript definition errors:
+
+    1. Ensure you have the latest version of AdMob Plus
+    2. Add `"skipLibCheck": true` to your `tsconfig.json`
+    3. Restart your IDE/TypeScript server
+  </Accordion>
+
+  <Accordion title="Module not found errors">
+    If imports fail at runtime:
+
+    1. Clear your bundler cache (Metro, Webpack, etc.)
+    2. Reinstall dependencies: `rm -rf node_modules && npm install`
+    3. For React Native: `npx react-native start --reset-cache`
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that AdMob Plus is installed, learn how to display your first ad:
+
+<Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+  Show your first ad in minutes with our step-by-step guide
+</Card>

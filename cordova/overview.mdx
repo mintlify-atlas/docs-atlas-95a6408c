@@ -1,0 +1,85 @@
+---
+title: Cordova Overview
+description: AdMob Plus integration for Apache Cordova
+---
+
+AdMob Plus provides a comprehensive Cordova plugin for integrating Google AdMob into your hybrid mobile applications.
+
+## Package Information
+
+**Package Name:** `admob-plus-cordova`
+
+**Version:** 2.0.0-alpha.19
+
+**Platforms:** Android, iOS, Browser
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="TypeScript Support" icon="code">
+    Full TypeScript definitions included for type-safe development
+  </Card>
+  <Card title="All Ad Formats" icon="rectangle-ad">
+    Support for Banner, Interstitial, Rewarded, Native, and App Open ads
+  </Card>
+  <Card title="Event System" icon="bolt">
+    Comprehensive event listeners for ad lifecycle management
+  </Card>
+  <Card title="No Ad-Sharing" icon="shield-check">
+    Keep 100% of your ad revenue - no hidden fees or revenue sharing
+  </Card>
+</CardGroup>
+
+## What You'll Learn
+
+This section covers everything you need to integrate AdMob Plus into your Cordova application:
+
+- [Installation](/cordova/installation) - Add the plugin to your Cordova project
+- [Usage](/cordova/usage) - Learn how to display ads in your app
+
+## Plugin Architecture
+
+The plugin bridges JavaScript and native code:
+
+```typescript
+import { AdMob } from 'admob-plus-cordova';
+
+// Initialize AdMob
+await AdMob.start();
+
+// Create and show an ad
+const banner = new AdMob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+
+await banner.show();
+```
+
+## Cordova Compatibility
+
+- **Cordova:** 12.0.0+
+- **Cordova Android:** 10.0.0+
+- **Cordova iOS:** 6.0.0+
+
+## Repository
+
+The plugin is open source and available on GitHub:
+
+<Card
+  title="View on GitHub"
+  icon="github"
+  href="https://github.com/admob-plus/admob-plus"
+>
+  View source code, report issues, and contribute to the project
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/cordova/installation">
+    Install the plugin in your Cordova project
+  </Card>
+  <Card title="Usage Guide" icon="book" href="/cordova/usage">
+    Learn how to implement ads in your app
+  </Card>
+</CardGroup>

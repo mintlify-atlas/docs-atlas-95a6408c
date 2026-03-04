@@ -1,0 +1,617 @@
+---
+title: Native Ad
+description: Customizable native ads that match your app design
+---
+
+<Warning>
+  This feature is implemented differently from the original AdMob Native Ad design, as there is no official way to use it with webview. Be aware of potential policy violations when using this feature.
+  
+  Review the [Native ads policies and guidelines](https://support.google.com/admob/answer/6329638) before implementation.
+</Warning>
+
+Native ads are ad assets that are presented to users via UI components that are native to the platform. They're shown using the same types of views with which you're already building your layouts, and can be formatted to match your app's visual design.
+
+## Installation
+
+In addition to installing `admob-plus-cordova`, you need to install `admob-plus-cordova-native` for displaying native ads.
+
+```bash
+cordova plugin add admob-plus-cordova-native --save
+```
+
+Or use a local version with [customized views](#customize-views):
+
+```bash
+cordova plugin add /path/to/admob-plus-cordova-native --link --save
+```
+
+## Creating a Native Ad
+
+<Steps>
+  <Step title="Create Instance">
+    Create a new `NativeAd` instance with your ad unit ID.
+    
+    ```javascript
+    const nativeAd = new admob.NativeAd({
+      adUnitId: 'ca-app-pub-3940256099942544/2247696110' // Test ad unit
+    })
+    ```
+  </Step>
+  
+  <Step title="Load the Ad">
+    Load the native ad.
+    
+    ```javascript
+    await nativeAd.load()
+    ```
+  </Step>
+  
+  <Step title="Show the Ad">
+    Show the ad at specific coordinates or attach to an HTML element.
+    
+    ```javascript
+    // Option 1: Show with coordinates
+    await nativeAd.show({
+      x: 0,
+      y: 50,
+      width: window.screen.width,
+      height: 300
+    })
+    
+    // Option 2: Attach to HTML element
+    await nativeAd.showWith(document.getElementById('ad-container'))
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+### Constructor Options
+
+<ParamField path="adUnitId" type="string" required>
+  Your AdMob ad unit ID for native ads.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Optional unique identifier for this ad instance. Defaults to `adUnitId` if not provided.
+</ParamField>
+
+<ParamField path="view" type="string">
+  Optional view identifier if you have multiple custom native ad views registered. Defaults to `"default"`.
+  
+  ```javascript
+  new admob.NativeAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    view: 'myview'
+  })
+  ```
+</ParamField>
+
+<ParamField path="contentUrl" type="string">
+  URL string for content that is being displayed in your app.
+</ParamField>
+
+<ParamField path="keywords" type="string[]">
+  Array of keyword strings for ad targeting.
+</ParamField>
+
+<ParamField path="npa" type="'1'">
+  Set to `'1'` to enable non-personalized ads (for GDPR compliance).
+</ParamField>
+
+### Methods
+
+#### `load()`
+
+Loads a native ad from AdMob.
+
+```javascript
+await nativeAd.load()
+```
+
+**Returns:** `Promise<void>`
+
+#### `show(options)`
+
+Displays the native ad at the specified position and size.
+
+```javascript
+await nativeAd.show({
+  x: 0,
+  y: 50,
+  width: window.screen.width,
+  height: 300
+})
+```
+
+**Parameters:**
+
+<ParamField path="x" type="number" default={0}>
+  X coordinate in pixels from the left edge.
+</ParamField>
+
+<ParamField path="y" type="number" default={0}>
+  Y coordinate in pixels from the top edge.
+</ParamField>
+
+<ParamField path="width" type="number" default={0}>
+  Width of the ad view in pixels.
+</ParamField>
+
+<ParamField path="height" type="number" default={0}>
+  Height of the ad view in pixels.
+</ParamField>
+
+**Returns:** `Promise<void>`
+
+<Note>
+  You can call `show()` multiple times to reposition or resize the ad.
+</Note>
+
+#### `showWith(element)`
+
+Attaches the native ad to an HTML element, automatically updating size and position as the element changes.
+
+```javascript
+const container = document.getElementById('native-ad-container')
+await nativeAd.showWith(container)
+```
+
+**Parameters:**
+- `element` (HTMLElement): The DOM element to attach the ad to
+
+**Returns:** `Promise<void>`
+
+<Note>
+  The ad view is a native overlay on top of the webview. Scrolling may show some delay due to synchronization between the native layer and webview.
+</Note>
+
+#### `hide()`
+
+Hides the native ad from view.
+
+```javascript
+await nativeAd.hide()
+```
+
+**Returns:** `Promise<void>`
+
+#### `isLoaded()`
+
+Checks if an ad is loaded and ready to be shown.
+
+```javascript
+const loaded = await nativeAd.isLoaded()
+if (loaded) {
+  await nativeAd.show({ x: 0, y: 0, width: 320, height: 200 })
+}
+```
+
+**Returns:** `Promise<boolean>`
+
+#### `on(eventName, callback)`
+
+Registers an event listener for the ad.
+
+```javascript
+const unsubscribe = nativeAd.on('load', (evt) => {
+  console.log('Native ad loaded:', evt.ad)
+})
+
+// Later: remove listener
+unsubscribe()
+```
+
+**Returns:** `Function` - Unsubscribe function
+
+## Events
+
+All events can be listened to using the `on()` method or via global event listeners.
+
+### `load`
+
+Fired when the ad is successfully loaded.
+
+```javascript
+nativeAd.on('load', (evt) => {
+  console.log('Native ad ready:', evt.ad.id)
+})
+
+// Or global listener
+document.addEventListener('admob.ad.load', async (evt) => {
+  if (evt.ad instanceof admob.NativeAd) {
+    console.log('Native ad loaded')
+  }
+})
+```
+
+### `loadfail`
+
+Fired when the ad request fails.
+
+```javascript
+nativeAd.on('loadfail', (evt) => {
+  console.error('Load failed:', evt.error)
+})
+```
+
+### `show`
+
+Fired when the ad is displayed.
+
+```javascript
+nativeAd.on('show', (evt) => {
+  console.log('Native ad displayed')
+})
+```
+
+### `showfail`
+
+Fired when the ad fails to display.
+
+```javascript
+nativeAd.on('showfail', (evt) => {
+  console.error('Show failed:', evt.error)
+})
+```
+
+### `dismiss`
+
+Fired when the user dismisses the ad (if applicable).
+
+```javascript
+nativeAd.on('dismiss', (evt) => {
+  console.log('Native ad dismissed')
+})
+```
+
+### `impression`
+
+Fired when an impression is recorded.
+
+```javascript
+nativeAd.on('impression', (evt) => {
+  console.log('Impression recorded')
+})
+```
+
+### `click`
+
+Fired when the user clicks on the ad.
+
+```javascript
+nativeAd.on('click', (evt) => {
+  console.log('Ad clicked')
+})
+```
+
+## Usage Examples
+
+### Basic Implementation
+
+```javascript
+let nativeAd
+
+document.addEventListener('deviceready', async () => {
+  nativeAd = new admob.NativeAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  nativeAd.on('load', async (evt) => {
+    console.log('Ad loaded, showing...')
+  })
+  
+  await nativeAd.load()
+  await nativeAd.show({
+    x: 0,
+    y: 50,
+    width: window.screen.width,
+    height: 300
+  })
+}, false)
+```
+
+### Attach to HTML Element
+
+```javascript
+let nativeAd
+
+document.addEventListener('deviceready', async () => {
+  nativeAd = new admob.NativeAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  await nativeAd.load()
+  
+  // Attach to element - ad will follow element position and size
+  const container = document.getElementById('native-ad')
+  await nativeAd.showWith(container)
+}, false)
+```
+
+**HTML:**
+```html
+<div id="native-ad" style="width: 100%; height: 300px;"></div>
+```
+
+### Dynamic Repositioning
+
+```javascript
+const nativeAd = new admob.NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+
+// Show at initial position
+await nativeAd.show({
+  x: 0,
+  y: 50,
+  width: window.screen.width,
+  height: 300
+})
+
+// Change position after 5 seconds
+setTimeout(() => {
+  nativeAd.show({
+    x: 0,
+    y: 150,
+    width: window.screen.width,
+    height: 350
+  })
+}, 5000)
+
+// Hide after 10 seconds
+setTimeout(() => {
+  nativeAd.hide()
+}, 10000)
+```
+
+### Multiple Native Ads
+
+```javascript
+const topAd = new admob.NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  id: 'top-native-ad'
+})
+
+const bottomAd = new admob.NativeAd({
+  adUnitId: 'ca-app-pub-xxx/zzz',
+  id: 'bottom-native-ad'
+})
+
+// Load both ads
+await Promise.all([
+  topAd.load(),
+  bottomAd.load()
+])
+
+// Show at different positions
+await topAd.show({ x: 0, y: 0, width: 360, height: 200 })
+await bottomAd.show({ x: 0, y: 500, width: 360, height: 200 })
+```
+
+### Feed Integration
+
+```javascript
+let feedNativeAds = []
+
+async function loadFeedWithAds() {
+  const feedItems = await loadFeedItems()
+  
+  // Insert ads every 5 items
+  for (let i = 0; i < feedItems.length; i += 5) {
+    const adId = `feed-ad-${i}`
+    
+    const nativeAd = new admob.NativeAd({
+      adUnitId: 'ca-app-pub-xxx/yyy',
+      id: adId
+    })
+    
+    await nativeAd.load()
+    feedNativeAds.push(nativeAd)
+    
+    // Insert ad container in feed
+    insertAdContainerInFeed(i, adId)
+    
+    // Attach ad to container
+    const container = document.getElementById(`ad-container-${adId}`)
+    await nativeAd.showWith(container)
+  }
+}
+```
+
+## Customize Views
+
+You can customize the look and feel of native ads by creating your own view implementations.
+
+### Setup
+
+<Steps>
+  <Step title="Fork the Plugin">
+    Clone and link the native ad plugin:
+    
+    ```bash
+    git clone https://github.com/admob-plus/admob-plus.git
+    cordova plugin rm admob-plus-cordova-native
+    cordova plugin add ./admob-plus/packages/cordova-native --link --save
+    cd admob-plus/packages/cordova-native
+    ```
+  </Step>
+  
+  <Step title="Modify Native Views">
+    Edit the platform-specific view files (see below).
+  </Step>
+  
+  <Step title="Build and Test">
+    Build your app and test the customized native ad views.
+  </Step>
+</Steps>
+
+### Default View Registration
+
+<Tabs>
+  <Tab title="Android">
+
+```java title="src/android/Plugin.java"
+package admob.plus.cordova.nativead;
+
+public class Plugin extends CordovaPlugin {
+    protected void pluginInitialize() {
+        AdMob.registerNativeAdViewProviders(new HashMap<String, Native.ViewProvider>() {{
+            put(AdMob.NATIVE_VIEW_DEFAULT, new AdViewProvider(cordova));
+        }});
+    }
+}
+```
+
+**Customize:** Modify `src/android/AdViewProvider.java` for view logic and edit `src/android/res/layout/ad_unified.xml` for layout.
+
+  </Tab>
+  <Tab title="iOS">
+
+```swift title="src/ios/AdMobNativePlugin.swift"
+class AdMobNativePlugin: CDVPlugin {
+    override func pluginInitialize() {
+        AMBPlugin.registerNativeAdViewProviders(["default": AMNAdViewProvider()])
+    }
+}
+```
+
+**Customize:** Modify `src/ios/AMNAdViewProvider.swift` for view logic and edit `src/ios/AMNAdView.xib` for interface.
+
+  </Tab>
+</Tabs>
+
+### Multiple Custom Views
+
+You can register multiple view types for different use cases.
+
+<Tabs>
+  <Tab title="Android">
+
+```java title="src/android/Plugin.java"
+package admob.plus.cordova.nativead;
+
+public class Plugin extends CordovaPlugin {
+    protected void pluginInitialize() {
+        AdMob.registerNativeAdViewProviders(new HashMap<String, Native.ViewProvider>() {{
+            put(AdMob.NATIVE_VIEW_DEFAULT, new AdViewProvider(cordova));
+            // Register custom views
+            put("compact", new CompactAdViewProvider(cordova));
+            put("featured", new FeaturedAdViewProvider(cordova));
+        }});
+    }
+}
+```
+
+  </Tab>
+  <Tab title="iOS">
+
+```swift title="src/ios/AdMobNativePlugin.swift"
+class AdMobNativePlugin: CDVPlugin {
+    override func pluginInitialize() {
+        AMBPlugin.registerNativeAdViewProviders([
+          "default": AMNAdViewProvider(),
+          // Register custom views
+          "compact": CompactAdViewProvider(),
+          "featured": FeaturedAdViewProvider()
+        ])
+    }
+}
+```
+
+  </Tab>
+</Tabs>
+
+**Use custom view:**
+
+```javascript
+const nativeAd = new admob.NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  view: 'compact' // or 'featured'
+})
+```
+
+**Update plugin.xml:**
+
+```xml title="plugin.xml"
+<plugin id="admob-plus-cordova-native">
+  <platform name="android">
+    <source-file src="src/android/CompactAdViewProvider.java" target-dir="src/admob/plus/cordova/nativead" />
+    <source-file src="src/android/FeaturedAdViewProvider.java" target-dir="src/admob/plus/cordova/nativead" />
+  </platform>
+
+  <platform name="ios">
+    <source-file src="src/ios/CompactAdViewProvider.swift" />
+    <source-file src="src/ios/FeaturedAdViewProvider.swift" />
+  </platform>
+</plugin>
+```
+
+## Best Practices
+
+### Design Guidelines
+
+<Note>
+  **AdMob Requirements:**
+  
+  Follow Google's [Native ads policies and guidelines](https://support.google.com/admob/answer/6329638):
+  
+  - Clearly label ads as "Ad" or "Sponsored"
+  - Don't mimic your app's UI too closely
+  - Make ads easily distinguishable from content
+  - Include all required ad components
+</Note>
+
+### Performance Considerations
+
+1. **Scrolling**: Native ad views are overlays, so there may be slight delays during scrolling
+2. **Memory**: Limit the number of simultaneously displayed native ads
+3. **Loading**: Preload ads before displaying them
+4. **Cleanup**: Hide or remove ads when no longer needed
+
+### Layout Tips
+
+```javascript
+// Use relative positioning
+const screenWidth = window.screen.width
+const adHeight = 250
+
+await nativeAd.show({
+  x: 0,
+  y: 100,
+  width: screenWidth,
+  height: adHeight
+})
+
+// Or attach to responsive HTML elements
+const container = document.getElementById('ad-container')
+await nativeAd.showWith(container)
+```
+
+### Use Cases
+
+- **Feed Ads**: Insert ads between content items in lists/feeds
+- **Content Ads**: Display ads alongside articles or videos
+- **Grid Ads**: Show ads in grid layouts (e.g., app stores)
+- **Card Ads**: Display ads as cards in your UI
+
+## Limitations
+
+<Warning>
+  **Known Limitations:**
+  
+  - Native ad view is an overlay on the webview, not integrated into the DOM
+  - Scrolling performance may not be perfectly smooth
+  - Element position updates have slight delays
+  - This implementation differs from standard AdMob native ads
+  - Risk of policy violations - review policies carefully
+</Warning>
+
+## References
+
+- [Native Ads - AdMob Android Documentation](https://developers.google.com/admob/android/native/start)
+- [Native Ads - AdMob iOS Documentation](https://developers.google.com/admob/ios/native/start)
+- [Native Ads Policies - AdMob Help](https://support.google.com/admob/answer/6329638)
+- [Native Ad Format Guidelines](https://developers.google.com/admob/android/native/guidelines)

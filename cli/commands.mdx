@@ -1,0 +1,339 @@
+---
+title: CLI Commands
+description: Complete reference for all AdMob Plus CLI commands
+---
+
+Reference for all commands available in the AdMob Plus CLI.
+
+## doctor
+
+Check your project setup for potential problems and configuration issues.
+
+<Note>
+This command performs automated checks on your development environment, dependencies, and AdMob Plus configuration.
+</Note>
+
+### Usage
+
+```bash
+admob-plus doctor
+```
+
+### What it checks
+
+The `doctor` command validates:
+
+- **Ad server connectivity** - Tests connection to Google's ad servers
+- **Node.js environment** - Verifies Node.js version and npm packages
+- **Cordova setup** - Checks Cordova plugins and configuration
+- **CocoaPods (macOS only)** - Validates iOS SDK version matches expected version
+- **Play Services version** - Verifies Android Google Play Services version
+- **iOS SDK version** - Checks Google Mobile Ads SDK for iOS
+
+### Example output
+
+```bash Terminal
+$ admob-plus doctor
+
+✔ googleads.g.doubleclick.net
+✔ CocoaPods
+  ✔ Google-Mobile-Ads-SDK v11.2.0
+✔ Node.js v18.17.0
+✔ npm v9.6.7
+✔ AdMob Plus plugin installed
+✔ Android Play Services version: 23.0.0
+```
+
+### When it finds issues
+
+If problems are detected, the command exits with status code 1 and shows actionable suggestions:
+
+```bash Terminal (Error example)
+$ admob-plus doctor
+
+✔ googleads.g.doubleclick.net
+✖ CocoaPods
+  ✖ Google-Mobile-Ads-SDK: 11.0.0 != 11.2.0
+     Run `pod repo update`
+✔ Node.js v18.17.0
+
+Found 1 issue.
+```
+
+---
+
+## info
+
+Get relevant version information about your OS, toolchain, and libraries. This is useful for bug reports and troubleshooting.
+
+### Usage
+
+```bash
+admob-plus info
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `--clipboard` | boolean | Copy the environment report output to the clipboard |
+
+### What it collects
+
+The `info` command gathers:
+
+- **System info** - OS, CPU, memory, shell
+- **Binaries** - Node, npm, yarn, Watchman versions  
+- **SDKs** - iOS SDK, Android SDK versions
+- **IDEs** - Xcode, Android Studio versions
+- **Languages** - Java version
+- **Package managers** - CocoaPods version
+- **Cordova** - Cordova version and installed plugins
+- **Ionic** - Ionic CLI version
+- **AndroidManifest.xml** - Validates AdMob App ID configuration
+- **npm packages** - All AdMob Plus and related package versions
+
+### Example output
+
+```bash Terminal
+$ admob-plus info
+
+  AdMob Plus Environment Info:
+
+  System:
+    OS: macOS 14.3.1
+    CPU: (10) arm64 Apple M1 Pro
+    Memory: 16.00 GB
+    Shell: /bin/zsh
+
+  Binaries:
+    Node: 18.17.0
+    npm: 9.6.7
+    Watchman: 2023.08.14.00
+
+  SDKs:
+    iOS SDK:
+      Platforms: DriverKit 23.2, iOS 17.2, macOS 14.2
+    Android SDK:
+      API Levels: 33, 34
+      Build Tools: 33.0.0, 34.0.0
+
+  IDEs:
+    Android Studio: 2023.1
+    Xcode: 15.2
+
+  Languages:
+    Java: 17.0.9
+
+  Managers:
+    CocoaPods: 1.15.2
+
+  npmPackages:
+    admob-plus-cordova: 2.0.0-alpha.18
+    cordova-android: 12.0.1
+    cordova-ios: 7.1.0
+    cordova: 12.0.0
+
+  Cordova:
+    Version: 12.0.0
+    Plugins:
+      admob-plus-cordova: 2.0.0-alpha.18
+      cordova-plugin-splashscreen: 6.0.2
+
+  AndroidManifest.xml:
+    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" ... />: looks ok
+```
+
+### Copy to clipboard
+
+Use the `--clipboard` flag to automatically copy the output:
+
+```bash
+admob-plus info --clipboard
+```
+
+The report is copied to your clipboard, ready to paste into GitHub issues or support requests.
+
+---
+
+## install
+
+Interactive command to install the AdMob Plus plugin for your project type.
+
+<Note>
+The CLI automatically detects your project type (Cordova, Capacitor, React Native, Ionic) and guides you through installation.
+</Note>
+
+### Usage
+
+```bash
+admob-plus install
+```
+
+### Options
+
+| Option | Alias | Type | Description |
+|--------|-------|------|-------------|
+| `--project` | `-p` | string | Project type (capacitor, cordova, ionic, react-native) |
+
+### Interactive installation
+
+When you run `install` without options, the CLI:
+
+1. Detects your project type from `package.json`
+2. Prompts you to confirm or select a different type
+3. Guides you through framework-specific installation
+
+### Examples
+
+<CodeGroup>
+```bash Cordova project
+$ admob-plus install
+
+? Project type? cordova
+? Input variables
+  APP_ID_ANDROID: ca-app-pub-XXXX~YYYY
+  APP_ID_IOS: ca-app-pub-XXXX~ZZZZ
+
+? Run "cordova plugin add admob-plus-cordova --save 
+  --variable APP_ID_ANDROID=ca-app-pub-XXXX~YYYY 
+  --variable APP_ID_IOS=ca-app-pub-XXXX~ZZZZ"? Yes
+
+Installing admob-plus-cordova...
+✓ Plugin installed successfully
+```
+
+```bash Capacitor project  
+$ admob-plus install
+
+? Project type? capacitor
+
+? Run "npm install @admob-plus/capacitor
+npx cap sync"? Yes
+
+Installing @admob-plus/capacitor...
+✓ Package installed
+✓ Synced with native projects
+```
+
+```bash React Native project
+$ admob-plus install
+
+? Project type? react-native
+
+? Run "npm install @admob-plus/react-native"? Yes
+
+Installing @admob-plus/react-native...
+✓ Package installed
+```
+
+```bash Specify project type
+# Skip auto-detection by specifying project type
+admob-plus install --project capacitor
+```
+</CodeGroup>
+
+### Supported project types
+
+| Project Type | Package Installed | Additional Steps |
+|--------------|-------------------|------------------|
+| `capacitor` | `@admob-plus/capacitor` | Runs `npx cap sync` |
+| `cordova` | `admob-plus-cordova` | Prompts for App IDs |
+| `react-native` | `@admob-plus/react-native` | None |
+| `ionic` | Detected but not implemented | Manual installation required |
+
+---
+
+## test-ids
+
+Print Google's test App IDs and Ad Unit IDs for development and testing.
+
+<Note>
+Always use test IDs during development to avoid violating AdMob policies. Never use real ad units during testing.
+</Note>
+
+### Usage
+
+```bash
+admob-plus test-ids
+```
+
+### Example output
+
+```bash Terminal
+$ admob-plus test-ids
+
+┌──────────────────────────────────┬──────────────────────────────────┐
+│ App ID (Android)                 │ App ID (iOS)                     │
+├──────────────────────────────────┼──────────────────────────────────┤
+│ ca-app-pub-3940256099942544~3347│ ca-app-pub-3940256099942544~1458 │
+│ 511713                           │ 002511                           │
+└──────────────────────────────────┴──────────────────────────────────┘
+
+┌──────────────────────────┬──────────────────────────────────┬──────────────────────────────────┐
+│ Ad Format                │ Ad Unit ID (Android)             │ Ad Unit ID (iOS)                 │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ App Open                 │ ca-app-pub-3940256099942544/9257│ ca-app-pub-3940256099942544/5662 │
+│                          │ 395921                           │ 855259                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Banner                   │ ca-app-pub-3940256099942544/6300│ ca-app-pub-3940256099942544/2934 │
+│                          │ 978111                           │ 735716                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Interstitial             │ ca-app-pub-3940256099942544/1033│ ca-app-pub-3940256099942544/4411 │
+│                          │ 173712                           │ 468910                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Interstitial Video       │ ca-app-pub-3940256099942544/8691│ ca-app-pub-3940256099942544/5135 │
+│                          │ 691433                           │ 589807                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Rewarded                 │ ca-app-pub-3940256099942544/5224│ ca-app-pub-3940256099942544/1712 │
+│                          │ 354917                           │ 485313                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Rewarded Interstitial    │ ca-app-pub-3940256099942544/5354│ ca-app-pub-3940256099942544/6978 │
+│                          │ 046379                           │ 759866                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Native Advanced          │ ca-app-pub-3940256099942544/2247│ ca-app-pub-3940256099942544/3986 │
+│                          │ 696110                           │ 624511                           │
+├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────┤
+│ Native Advanced Video    │ ca-app-pub-3940256099942544/1044│ ca-app-pub-3940256099942544/2521 │
+│                          │ 960115                           │ 693316                           │
+└──────────────────────────┴──────────────────────────────────┴──────────────────────────────────┘
+```
+
+### Test Ad Unit IDs
+
+The command displays test IDs for all ad formats:
+
+- **App Open** - Full-screen ads shown when users open your app
+- **Banner** - Small rectangular ads at top or bottom of screen
+- **Interstitial** - Full-screen ads between content transitions
+- **Interstitial Video** - Video interstitial ads
+- **Rewarded** - Video ads that reward users for watching
+- **Rewarded Interstitial** - Full-screen ads with rewards
+- **Native Advanced** - Customizable native ads
+- **Native Advanced Video** - Native ads with video content
+
+### Using test IDs
+
+<Steps>
+  <Step title="Copy the test IDs">
+    Run `admob-plus test-ids` and copy the relevant IDs for your platform.
+  </Step>
+
+  <Step title="Use in your code">
+    Replace production ad unit IDs with test IDs during development:
+
+    ```typescript
+    const banner = new BannerAd({
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Android test ID
+    })
+    ```
+  </Step>
+
+  <Step title="Switch to production IDs">
+    Before releasing, replace test IDs with your real AdMob ad unit IDs.
+  </Step>
+</Steps>
+
+<Warning>
+Using production ad unit IDs during development can result in invalid traffic and may lead to your AdMob account being suspended.
+</Warning>

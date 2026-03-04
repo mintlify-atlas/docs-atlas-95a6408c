@@ -1,0 +1,391 @@
+---
+title: NativeAd
+description: API reference for the NativeAd class
+---
+
+<RequestExample>
+```typescript
+import { NativeAd } from 'admob-plus-cordova'
+
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+await nativeAd.show({ x: 0, y: 100, width: 320, height: 250 })
+```
+</RequestExample>
+
+NativeAd allows you to customize the look and feel of ads to match your app's design. Native ads are presented to users via UI components that are native to the platform.
+
+## Constructor
+
+<ParamField path="options" type="NativeAdOptions" required>
+  Configuration options for the native ad
+  
+  <Expandable title="properties">
+    <ParamField path="adUnitId" type="string" required>
+      Your AdMob ad unit ID
+    </ParamField>
+    
+    <ParamField path="view" type="string">
+      Custom view template identifier for the native ad layout
+    </ParamField>
+    
+    <ParamField path="id" type="string">
+      Custom identifier for the ad instance. Defaults to `adUnitId`
+    </ParamField>
+    
+    <ParamField path="contentUrl" type="string">
+      Content URL for targeting purposes
+    </ParamField>
+    
+    <ParamField path="keywords" type="string[]">
+      Keywords for ad targeting
+    </ParamField>
+    
+    <ParamField path="npa" type="'1'">
+      Set to '1' to enable non-personalized ads (for GDPR compliance)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Methods
+
+### load()
+
+Loads the native ad. Must be called before showing the ad.
+
+```typescript
+await nativeAd.load()
+```
+
+**Returns:** `Promise<void>`
+
+### show()
+
+Displays the native ad at the specified position and size.
+
+```typescript
+await nativeAd.show({
+  x: 0,
+  y: 100,
+  width: 320,
+  height: 250
+})
+```
+
+<ParamField path="options" type="object">
+  Position and size configuration for the ad
+  
+  <Expandable title="properties">
+    <ParamField path="x" type="number" default="0">
+      X coordinate in pixels from the left edge
+    </ParamField>
+    
+    <ParamField path="y" type="number" default="0">
+      Y coordinate in pixels from the top edge
+    </ParamField>
+    
+    <ParamField path="width" type="number" default="0">
+      Width of the ad in pixels
+    </ParamField>
+    
+    <ParamField path="height" type="number" default="0">
+      Height of the ad in pixels
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+**Returns:** `Promise<void>`
+
+### showWith()
+
+Displays the native ad positioned over an HTML element. Automatically updates position when the element moves or resizes.
+
+```typescript
+const container = document.getElementById('ad-container')
+await nativeAd.showWith(container)
+```
+
+<ParamField path="element" type="HTMLElement" required>
+  The HTML element to position the ad over
+</ParamField>
+
+**Returns:** `Promise<void>`
+
+### hide()
+
+Hides the native ad from view.
+
+```typescript
+await nativeAd.hide()
+```
+
+**Returns:** `Promise<void>`
+
+### isLoaded()
+
+Checks if the native ad is loaded and ready to show.
+
+```typescript
+const loaded = await nativeAd.isLoaded()
+if (loaded) {
+  await nativeAd.show()
+}
+```
+
+**Returns:** `Promise<boolean>` - True if the ad is loaded, false otherwise
+
+### on()
+
+Registers an event listener for ad events.
+
+```typescript
+const unsubscribe = nativeAd.on('load', (event) => {
+  console.log('Native ad loaded', event)
+})
+
+// Later, to remove the listener:
+unsubscribe()
+```
+
+<ParamField path="eventName" type="string" required>
+  Name of the event to listen for. Common events:
+  - `load` - Ad has loaded
+  - `loadfail` - Ad failed to load
+  - `show` - Ad is showing
+  - `showfail` - Ad failed to show
+  - `impression` - Ad impression recorded
+  - `click` - User clicked the ad
+</ParamField>
+
+<ParamField path="callback" type="function" required>
+  Function to call when the event occurs
+</ParamField>
+
+**Returns:** `() => void` - Function to remove the event listener
+
+## Properties
+
+<ResponseField name="id" type="string">
+  The unique identifier for this ad instance
+</ResponseField>
+
+<ResponseField name="adUnitId" type="string">
+  The AdMob ad unit ID
+</ResponseField>
+
+## Examples
+
+### Basic Usage
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+await nativeAd.show({
+  x: 0,
+  y: 100,
+  width: 320,
+  height: 250
+})
+```
+
+### Show Over HTML Element
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+
+// Position ad over a container element
+const container = document.getElementById('ad-container')
+await nativeAd.showWith(container)
+```
+
+### With Custom View
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  view: 'my_custom_template'
+})
+
+await nativeAd.load()
+await nativeAd.show({
+  x: 10,
+  y: 50,
+  width: 300,
+  height: 200
+})
+```
+
+### In Scrollable Content
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+
+// Create container for the ad in your content
+const adContainer = document.createElement('div')
+adContainer.id = 'native-ad-container'
+adContainer.style.width = '100%'
+adContainer.style.height = '250px'
+adContainer.style.margin = '20px 0'
+
+// Insert into content (e.g., after 3rd paragraph)
+const content = document.getElementById('article-content')
+const paragraphs = content.getElementsByTagName('p')
+if (paragraphs.length > 3) {
+  paragraphs[2].after(adContainer)
+}
+
+// Show ad in the container
+await nativeAd.showWith(adContainer)
+```
+
+### Show and Hide
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+
+// Show the ad
+await nativeAd.show({
+  x: 0,
+  y: 0,
+  width: 320,
+  height: 250
+})
+
+// Later, hide the ad
+await nativeAd.hide()
+
+// Show it again at a different position
+await nativeAd.show({
+  x: 0,
+  y: 500,
+  width: 320,
+  height: 250
+})
+```
+
+### With Event Listeners
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+nativeAd.on('load', () => {
+  console.log('Native ad loaded successfully')
+})
+
+nativeAd.on('loadfail', (event) => {
+  console.error('Failed to load native ad', event.error)
+})
+
+nativeAd.on('impression', () => {
+  console.log('Native ad impression recorded')
+})
+
+nativeAd.on('click', () => {
+  console.log('User clicked native ad')
+})
+
+await nativeAd.load()
+
+if (await nativeAd.isLoaded()) {
+  await nativeAd.show({
+    x: 0,
+    y: 100,
+    width: 320,
+    height: 250
+  })
+}
+```
+
+### Responsive Native Ad
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+
+const adContainer = document.getElementById('ad-container')
+
+// Show ad and handle window resize
+await nativeAd.showWith(adContainer)
+
+// The ad will automatically reposition when:
+// - Window is resized
+// - Page is scrolled
+// - DOM changes occur
+// Thanks to the MutationObserver and event listeners in showWith()
+```
+
+### Multiple Native Ads
+
+```typescript
+const nativeAds = [
+  new NativeAd({
+    id: 'native-ad-1',
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  }),
+  new NativeAd({
+    id: 'native-ad-2',
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+]
+
+// Load all ads
+await Promise.all(nativeAds.map(ad => ad.load()))
+
+// Show ads at different positions
+await nativeAds[0].show({ x: 0, y: 100, width: 300, height: 250 })
+await nativeAds[1].show({ x: 0, y: 500, width: 300, height: 250 })
+```
+
+### In List/Feed
+
+```typescript
+const nativeAd = new NativeAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await nativeAd.load()
+
+// Insert ad into a feed every N items
+function insertAdInFeed() {
+  const feed = document.getElementById('feed')
+  const items = feed.querySelectorAll('.feed-item')
+  
+  if (items.length > 5) {
+    // Create ad container
+    const adItem = document.createElement('div')
+    adItem.className = 'feed-item feed-ad'
+    adItem.style.height = '250px'
+    
+    // Insert after 5th item
+    items[4].after(adItem)
+    
+    // Show ad in container
+    nativeAd.showWith(adItem)
+  }
+}
+
+insertAdInFeed()
+```

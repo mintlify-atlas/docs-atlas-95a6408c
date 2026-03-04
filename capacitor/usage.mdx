@@ -1,0 +1,287 @@
+---
+title: Capacitor Usage
+description: Display ads in your Capacitor app
+---
+
+Learn how to implement AdMob ads in your Capacitor application using AdMob Plus.
+
+## Basic Setup
+
+### Import and Initialize
+
+Import the plugin and initialize AdMob:
+
+```typescript
+import { AdMobPlus } from '@admob-plus/capacitor';
+
+// Initialize AdMob when your app starts
+await AdMobPlus.start();
+```
+
+## Displaying Ads
+
+### Banner Ad
+
+Create and display a banner ad:
+
+```typescript
+import { AdMobPlus } from '@admob-plus/capacitor';
+
+// Create the ad
+const adId = 1; // Unique identifier for this ad
+await AdMobPlus.adCreate({
+  id: adId,
+  adUnitId: 'ca-app-pub-xxx/xxx',
+  position: 'bottom',
+});
+
+// Load the ad
+await AdMobPlus.adLoad({ id: adId });
+
+// Show the ad
+await AdMobPlus.adShow({ id: adId });
+```
+
+<Tip>
+  Use test ad unit IDs during development. See the [Test Ads guide](/guides/test-ads).
+</Tip>
+
+### Interstitial Ad
+
+Display a full-screen interstitial:
+
+```typescript
+const adId = 2;
+
+await AdMobPlus.adCreate({
+  id: adId,
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+
+await AdMobPlus.adLoad({ id: adId });
+
+// Check if loaded
+const { isLoaded } = await AdMobPlus.adIsLoaded({ id: adId });
+
+if (isLoaded) {
+  await AdMobPlus.adShow({ id: adId });
+}
+```
+
+### Rewarded Ad
+
+Implement rewarded video ads:
+
+```typescript
+const adId = 3;
+
+await AdMobPlus.adCreate({
+  id: adId,
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+
+await AdMobPlus.adLoad({ id: adId });
+
+// Listen for reward event
+AdMobPlus.addListener('adReward', (event) => {
+  if (event.adId === adId) {
+    console.log('User earned reward:', event.reward);
+    // Grant the reward
+  }
+});
+
+const { isLoaded } = await AdMobPlus.adIsLoaded({ id: adId });
+if (isLoaded) {
+  await AdMobPlus.adShow({ id: adId });
+}
+```
+
+## Event Handling
+
+Listen to ad events using Capacitor's event system:
+
+```typescript
+import { AdMobPlus } from '@admob-plus/capacitor';
+
+// Ad loaded successfully
+const loadListener = await AdMobPlus.addListener('adLoad', (event) => {
+  console.log('Ad loaded:', event.adId);
+});
+
+// Ad failed to load
+const loadFailListener = await AdMobPlus.addListener('adLoadFail', (event) => {
+  console.error('Ad load failed:', event.error);
+});
+
+// Ad was shown
+const showListener = await AdMobPlus.addListener('adShow', (event) => {
+  console.log('Ad shown:', event.adId);
+});
+
+// Ad was dismissed
+const dismissListener = await AdMobPlus.addListener('adDismiss', (event) => {
+  console.log('Ad dismissed:', event.adId);
+});
+
+// Clean up listeners when done
+loadListener.remove();
+loadFailListener.remove();
+showListener.remove();
+dismissListener.remove();
+```
+
+## Configuration
+
+### Global Configuration
+
+Configure AdMob settings:
+
+```typescript
+await AdMobPlus.configure({
+  appMuted: false,
+  appVolume: 1.0,
+});
+
+await AdMobPlus.configRequest({
+  maxAdContentRating: 'PG',
+  tagForChildDirectedTreatment: false,
+  tagForUnderAgeOfConsent: false,
+  testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+});
+```
+
+### App Tracking Transparency (iOS)
+
+Request tracking authorization on iOS:
+
+```typescript
+import { AdMobPlus, TrackingAuthorizationStatus } from '@admob-plus/capacitor';
+
+const { status } = await AdMobPlus.requestTrackingAuthorization();
+
+if (status === TrackingAuthorizationStatus.authorized) {
+  console.log('Tracking authorized');
+}
+```
+
+## Complete Example
+
+Here's a complete Capacitor component with ads:
+
+```typescript
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AdMobPlus, PluginListenerHandle } from '@admob-plus/capacitor';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <ion-content>
+      <ion-button (click)="showInterstitial()">Show Interstitial</ion-button>
+      <ion-button (click)="showRewarded()">Watch Rewarded Ad</ion-button>
+    </ion-content>
+  `
+})
+export class HomePage implements OnInit, OnDestroy {
+  private bannerAdId = 1;
+  private interstitialAdId = 2;
+  private rewardedAdId = 3;
+  private listeners: PluginListenerHandle[] = [];
+
+  async ngOnInit() {
+    await AdMobPlus.start();
+    await this.setupListeners();
+    await this.showBanner();
+    await this.preloadInterstitial();
+  }
+
+  async setupListeners() {
+    const listener = await AdMobPlus.addListener('adReward', (event) => {
+      if (event.adId === this.rewardedAdId) {
+        console.log('User earned reward!', event.reward);
+        // Grant reward to user
+      }
+    });
+    this.listeners.push(listener);
+  }
+
+  async showBanner() {
+    await AdMobPlus.adCreate({
+      id: this.bannerAdId,
+      adUnitId: 'ca-app-pub-xxx/xxx',
+      position: 'bottom',
+    });
+    await AdMobPlus.adLoad({ id: this.bannerAdId });
+    await AdMobPlus.adShow({ id: this.bannerAdId });
+  }
+
+  async preloadInterstitial() {
+    await AdMobPlus.adCreate({
+      id: this.interstitialAdId,
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+    await AdMobPlus.adLoad({ id: this.interstitialAdId });
+  }
+
+  async showInterstitial() {
+    const { isLoaded } = await AdMobPlus.adIsLoaded({ id: this.interstitialAdId });
+    if (isLoaded) {
+      await AdMobPlus.adShow({ id: this.interstitialAdId });
+      // Preload next interstitial
+      await this.preloadInterstitial();
+    }
+  }
+
+  async showRewarded() {
+    await AdMobPlus.adCreate({
+      id: this.rewardedAdId,
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+    await AdMobPlus.adLoad({ id: this.rewardedAdId });
+    
+    const { isLoaded } = await AdMobPlus.adIsLoaded({ id: this.rewardedAdId });
+    if (isLoaded) {
+      await AdMobPlus.adShow({ id: this.rewardedAdId });
+    }
+  }
+
+  ngOnDestroy() {
+    // Clean up listeners
+    this.listeners.forEach(listener => listener.remove());
+  }
+}
+```
+
+## Best Practices
+
+<Check>
+  Initialize AdMob when your app starts
+</Check>
+<Check>
+  Use unique ad IDs for each ad instance
+</Check>
+<Check>
+  Check `isLoaded()` before showing interstitial/rewarded ads
+</Check>
+<Check>
+  Clean up event listeners when components are destroyed
+</Check>
+<Check>
+  Request ATT authorization on iOS before showing ads
+</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ad Formats" icon="rectangle-ad" href="/ad-formats/banner">
+    Learn about all available ad formats
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Advanced configuration options
+  </Card>
+  <Card title="Events" icon="bolt" href="/guides/events">
+    Complete event reference
+  </Card>
+  <Card title="Consent" icon="shield-check" href="/guides/consent">
+    GDPR/CCPA compliance
+  </Card>
+</CardGroup>

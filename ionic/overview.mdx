@@ -1,0 +1,88 @@
+---
+title: Ionic Overview
+description: AdMob Plus integration for Ionic Framework
+---
+
+AdMob Plus provides an Ionic Native wrapper for seamless AdMob integration in Ionic applications.
+
+## Package Information
+
+**Package Name:** `@admob-plus/ionic`
+
+**Version:** 2.0.0-alpha.19
+
+**Dependencies:** Requires `admob-plus-cordova` and `@ionic-native/core`
+
+**Platforms:** Android, iOS (via Cordova or Capacitor)
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Ionic Native Wrapper" icon="flask">
+    Built as an Ionic Native plugin for Angular integration
+  </Card>
+  <Card title="Observable API" icon="signal-stream">
+    RxJS observables for reactive programming
+  </Card>
+  <Card title="Angular Support" icon="angular">
+    First-class Angular and Ionic Framework support
+  </Card>
+  <Card title="All Ad Formats" icon="rectangle-ad">
+    Banner, Interstitial, Rewarded, Native, and App Open ads
+  </Card>
+</CardGroup>
+
+## What You'll Learn
+
+This section covers Ionic integration:
+
+- [Installation](/ionic/installation) - Add the package to your Ionic project
+- [Usage](/ionic/usage) - Implement ads in your Ionic app
+
+## Architecture
+
+The Ionic Native wrapper provides an Angular-friendly API over the Cordova plugin:
+
+```typescript
+import { AdMob } from '@admob-plus/ionic/ngx';
+
+// Inject in component
+constructor(private admob: AdMob) {}
+
+// Use with Angular patterns
+async showAd() {
+  await this.admob.start();
+}
+```
+
+## Ionic Compatibility
+
+- **Ionic Framework:** 4.0.0+
+- **Angular:** 17.0.0+
+- **Ionic Native Core:** 4.0.0+
+- **RxJS:** 5.5.0+
+
+## Underlying Plugin
+
+The package wraps `admob-plus-cordova`, so all Cordova plugin features are available.
+
+## Repository
+
+<Card
+  title="View on GitHub"
+  icon="github"
+  href="https://github.com/admob-plus/admob-plus"
+>
+  Open source and actively maintained
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/ionic/installation">
+    Install the package in your Ionic project
+  </Card>
+  <Card title="Usage Guide" icon="book" href="/ionic/usage">
+    Learn how to display ads
+  </Card>
+</CardGroup>

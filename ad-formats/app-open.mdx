@@ -1,0 +1,602 @@
+---
+title: App Open Ad
+sidebar_label: App Open
+---
+
+App open ads are a special ad format intended for publishers wishing to monetize their app load screens. App open ads can be closed by your users at any time and are designed to be shown when users bring your app to the foreground.
+
+## Creating an App Open Ad
+
+<Steps>
+  <Step title="Create Instance">
+    Create a new `AppOpenAd` instance with your ad unit ID.
+    
+    ```javascript
+    const appOpen = new admob.AppOpenAd({
+      adUnitId: 'ca-app-pub-3940256099942544/5575463023' // Test ad unit
+    })
+    ```
+  </Step>
+  
+  <Step title="Load the Ad">
+    Load the app open ad, typically during app initialization.
+    
+    ```javascript
+    await appOpen.load()
+    ```
+  </Step>
+  
+  <Step title="Show on Resume">
+    Show the ad when the app comes to the foreground.
+    
+    ```javascript
+    document.addEventListener('resume', async () => {
+      if (!await appOpen.show()) {
+        await appOpen.load()
+      }
+    }, false)
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+### Constructor Options
+
+<ParamField path="adUnitId" type="string" required>
+  Your AdMob ad unit ID for app open ads.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Optional unique identifier for this ad instance. Defaults to `adUnitId` if not provided.
+</ParamField>
+
+<ParamField path="contentUrl" type="string">
+  URL string for content that is being displayed in your app.
+</ParamField>
+
+<ParamField path="keywords" type="string[]">
+  Array of keyword strings for ad targeting.
+</ParamField>
+
+<ParamField path="npa" type="'1'">
+  Set to `'1'` to enable non-personalized ads (for GDPR compliance).
+</ParamField>
+
+### Methods
+
+#### `load()`
+
+Loads an app open ad from AdMob.
+
+```javascript
+await appOpen.load()
+```
+
+**Returns:** `Promise<void>`
+
+<Note>
+  App open ads should be loaded before the app comes to the foreground to ensure they're ready to show immediately.
+</Note>
+
+#### `show()`
+
+Displays the loaded app open ad.
+
+```javascript
+const shown = await appOpen.show()
+if (shown) {
+  console.log('App open ad was shown')
+} else {
+  console.log('App open ad was not ready')
+}
+```
+
+**Returns:** `Promise<boolean>` - `true` if the ad was shown, `false` if not loaded or unavailable
+
+<Note>
+  Unlike other ad formats, `show()` returns a boolean indicating whether the ad was successfully displayed.
+</Note>
+
+#### `isLoaded()`
+
+Checks if an ad is loaded and ready to be shown.
+
+```javascript
+const loaded = await appOpen.isLoaded()
+if (loaded) {
+  await appOpen.show()
+}
+```
+
+**Returns:** `Promise<boolean>`
+
+#### `on(eventName, callback)`
+
+Registers an event listener for the ad.
+
+```javascript
+const unsubscribe = appOpen.on('load', (evt) => {
+  console.log('App open ad loaded:', evt.ad)
+})
+
+// Later: remove listener
+unsubscribe()
+```
+
+**Returns:** `Function` - Unsubscribe function
+
+## Events
+
+All events can be listened to using the `on()` method or via global event listeners.
+
+### `load`
+
+Fired when the ad is successfully loaded and ready to show.
+
+```javascript
+appOpen.on('load', (evt) => {
+  console.log('App open ad ready:', evt.ad.id)
+})
+```
+
+### `loadfail`
+
+Fired when the ad request fails.
+
+```javascript
+appOpen.on('loadfail', (evt) => {
+  console.error('Load failed:', evt.error)
+})
+```
+
+### `show`
+
+Fired when the ad is displayed to the user.
+
+```javascript
+appOpen.on('show', (evt) => {
+  console.log('App open ad displayed')
+})
+
+// Or use global listener with type checking
+document.addEventListener('admob.ad.show', async (evt) => {
+  if (evt.ad instanceof admob.AppOpenAd) {
+    console.log('App open ad shown')
+  }
+})
+```
+
+### `showfail`
+
+Fired when the ad fails to display.
+
+```javascript
+appOpen.on('showfail', (evt) => {
+  console.error('Show failed:', evt.error)
+})
+```
+
+### `dismiss`
+
+Fired when the user closes the ad and returns to the app.
+
+```javascript
+appOpen.on('dismiss', (evt) => {
+  console.log('App open ad dismissed')
+  // Continue with app flow
+})
+```
+
+### `impression`
+
+Fired when an impression is recorded for the ad.
+
+```javascript
+appOpen.on('impression', (evt) => {
+  console.log('Impression recorded')
+})
+```
+
+### `click`
+
+Fired when the user clicks on the ad.
+
+```javascript
+appOpen.on('click', (evt) => {
+  console.log('Ad clicked')
+})
+```
+
+## Usage Examples
+
+### Basic Implementation
+
+```javascript
+let appOpen
+
+document.addEventListener('deviceready', async () => {
+  appOpen = new admob.AppOpenAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  appOpen.on('load', (evt) => {
+    console.log('App open ad is ready')
+  })
+  
+  // Load the first ad
+  await appOpen.load()
+  
+  // Show when app resumes
+  document.addEventListener('resume', async () => {
+    if (!await appOpen.show()) {
+      // Ad wasn't ready, load a new one
+      await appOpen.load()
+    }
+  }, false)
+}, false)
+```
+
+### Complete Implementation with Logic
+
+```javascript
+let appOpen
+let isShowingAd = false
+let lastAdShownTime = 0
+const AD_COOLDOWN = 4 * 60 * 60 * 1000 // 4 hours
+
+document.addEventListener('deviceready', async () => {
+  appOpen = new admob.AppOpenAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  appOpen.on('load', () => {
+    console.log('App open ad loaded')
+  })
+  
+  appOpen.on('loadfail', (evt) => {
+    console.error('Failed to load app open ad:', evt.error)
+  })
+  
+  appOpen.on('show', () => {
+    isShowingAd = true
+  })
+  
+  appOpen.on('dismiss', async () => {
+    isShowingAd = false
+    lastAdShownTime = Date.now()
+    // Load next ad
+    await appOpen.load()
+  })
+  
+  appOpen.on('showfail', async () => {
+    isShowingAd = false
+    // Try loading a new ad
+    await appOpen.load()
+  })
+  
+  // Initial load
+  await appOpen.load()
+  
+  // Show on resume
+  document.addEventListener('resume', async () => {
+    await showAppOpenAdIfReady()
+  }, false)
+}, false)
+
+async function showAppOpenAdIfReady() {
+  // Don't show if already showing an ad
+  if (isShowingAd) {
+    return
+  }
+  
+  // Check cooldown period
+  const timeSinceLastAd = Date.now() - lastAdShownTime
+  if (timeSinceLastAd < AD_COOLDOWN) {
+    console.log('App open ad on cooldown')
+    return
+  }
+  
+  // Try to show the ad
+  const shown = await appOpen.show()
+  
+  if (!shown) {
+    console.log('App open ad not ready, loading new ad')
+    await appOpen.load()
+  }
+}
+```
+
+### With Loading Screen
+
+```javascript
+let appOpen
+let loadingScreenVisible = false
+
+document.addEventListener('deviceready', async () => {
+  appOpen = new admob.AppOpenAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  appOpen.on('dismiss', async () => {
+    // Hide loading screen when ad is dismissed
+    if (loadingScreenVisible) {
+      hideLoadingScreen()
+      loadingScreenVisible = false
+    }
+    
+    // Load next ad
+    await appOpen.load()
+  })
+  
+  await appOpen.load()
+  
+  document.addEventListener('resume', async () => {
+    // Show loading screen
+    showLoadingScreen()
+    loadingScreenVisible = true
+    
+    // Try to show app open ad
+    const shown = await appOpen.show()
+    
+    if (!shown) {
+      // Ad not ready, hide loading screen and continue
+      hideLoadingScreen()
+      loadingScreenVisible = false
+      await appOpen.load()
+    }
+    // If ad shown, loading screen will be hidden when ad is dismissed
+  }, false)
+}, false)
+
+function showLoadingScreen() {
+  document.getElementById('loading-screen').style.display = 'flex'
+}
+
+function hideLoadingScreen() {
+  document.getElementById('loading-screen').style.display = 'none'
+}
+```
+
+### Cold Start Implementation
+
+```javascript
+let appOpen
+let isFirstLaunch = true
+
+document.addEventListener('deviceready', async () => {
+  appOpen = new admob.AppOpenAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  // Load initial ad
+  await appOpen.load()
+  
+  // Don't show on first launch
+  if (isFirstLaunch) {
+    isFirstLaunch = false
+    return
+  }
+  
+  // Show immediately on cold start (not first launch)
+  await appOpen.show()
+}, false)
+
+// Show on resume events
+document.addEventListener('resume', async () => {
+  if (!await appOpen.show()) {
+    await appOpen.load()
+  }
+}, false)
+```
+
+### Frequency Capping
+
+```javascript
+class AppOpenAdManager {
+  constructor(adUnitId) {
+    this.ad = new admob.AppOpenAd({ adUnitId })
+    this.isShowingAd = false
+    this.appResumeCount = 0
+    this.maxFrequency = 3 // Show every 3rd resume
+    
+    this.setupEventListeners()
+  }
+  
+  setupEventListeners() {
+    this.ad.on('show', () => {
+      this.isShowingAd = true
+    })
+    
+    this.ad.on('dismiss', async () => {
+      this.isShowingAd = false
+      this.appResumeCount = 0 // Reset counter after showing
+      await this.ad.load()
+    })
+    
+    this.ad.on('showfail', async () => {
+      this.isShowingAd = false
+      await this.ad.load()
+    })
+  }
+  
+  async init() {
+    await this.ad.load()
+  }
+  
+  async onAppResume() {
+    if (this.isShowingAd) {
+      return
+    }
+    
+    this.appResumeCount++
+    
+    // Show ad every Nth resume
+    if (this.appResumeCount >= this.maxFrequency) {
+      const shown = await this.ad.show()
+      
+      if (!shown) {
+        await this.ad.load()
+      }
+    }
+  }
+}
+
+// Usage
+let appOpenManager
+
+document.addEventListener('deviceready', async () => {
+  appOpenManager = new AppOpenAdManager('ca-app-pub-xxx/yyy')
+  await appOpenManager.init()
+}, false)
+
+document.addEventListener('resume', async () => {
+  await appOpenManager.onAppResume()
+}, false)
+```
+
+## Best Practices
+
+### When to Show App Open Ads
+
+<Note>
+  **Recommended Scenarios:**
+  
+  - When users return to your app from the background
+  - During cold starts (but not on first launch)
+  - After the app has been inactive for a certain period
+  
+  **Avoid Showing:**
+  
+  - On the very first app launch
+  - When returning from viewing another ad
+  - When users are actively engaged (e.g., during gameplay)
+  - Too frequently (implement cooldown periods)
+</Note>
+
+### Implementation Guidelines
+
+1. **Wait Before First Show**: Don't show an app open ad until after users have used your app a few times
+2. **Implement Cooldown**: Use a time-based cooldown (e.g., 4 hours) between ad displays
+3. **Check Context**: Don't show ads when returning from interstitial or rewarded ads
+4. **Preload**: Always load ads before you need them
+5. **Handle Failure**: Gracefully handle cases where ads fail to load or show
+
+### Loading Strategy
+
+```javascript
+// Load on app start
+document.addEventListener('deviceready', async () => {
+  await appOpen.load()
+})
+
+// Reload after showing
+appOpen.on('dismiss', async () => {
+  await appOpen.load()
+})
+
+// Reload on failure
+appOpen.on('showfail', async () => {
+  await appOpen.load()
+})
+```
+
+### Resume Event Handling
+
+<Warning>
+  The `resume` event is triggered for various reasons, including:
+  - Returning from background
+  - Dismissing other ads (interstitial, rewarded)
+  - Returning from external links
+  
+  Always add logic to control when to display app open ads to avoid showing them inappropriately.
+</Warning>
+
+```javascript
+document.addEventListener('resume', async () => {
+  // Add your logic here to determine if ad should be shown
+  if (shouldShowAppOpenAd()) {
+    await appOpen.show()
+  }
+}, false)
+
+function shouldShowAppOpenAd() {
+  // Check if enough time has passed
+  // Check if user is not in critical flow
+  // Check if ad is loaded
+  return true // or false
+}
+```
+
+## Policy Compliance
+
+<Warning>
+  **Important Policy Considerations:**
+  
+  Review the [App open ad guidance](https://support.google.com/admob/answer/9341964) to avoid potential policy violations:
+  
+  - Don't show ads too frequently
+  - Ensure ads don't interfere with app functionality
+  - Don't show ads during critical user flows
+  - Respect user experience and engagement
+</Warning>
+
+## Common Patterns
+
+### Pattern 1: Simple Cold Start
+
+```javascript
+let appOpen
+let coldStart = true
+
+document.addEventListener('deviceready', async () => {
+  appOpen = new admob.AppOpenAd({ adUnitId: 'ca-app-pub-xxx/yyy' })
+  await appOpen.load()
+}, false)
+
+document.addEventListener('resume', async () => {
+  if (coldStart) {
+    coldStart = false
+    return
+  }
+  await appOpen.show()
+}, false)
+```
+
+### Pattern 2: Time-Based Cooldown
+
+```javascript
+let lastShown = 0
+const COOLDOWN = 4 * 60 * 60 * 1000 // 4 hours
+
+document.addEventListener('resume', async () => {
+  if (Date.now() - lastShown < COOLDOWN) {
+    return
+  }
+  
+  if (await appOpen.show()) {
+    lastShown = Date.now()
+  }
+}, false)
+```
+
+### Pattern 3: Show Count Frequency
+
+```javascript
+let resumeCount = 0
+
+document.addEventListener('resume', async () => {
+  resumeCount++
+  
+  if (resumeCount % 3 === 0) { // Every 3rd resume
+    await appOpen.show()
+  }
+}, false)
+```
+
+## References
+
+- [App Open Ads - AdMob Android Documentation](https://developers.google.com/admob/android/app-open-ads)
+- [App Open Ads - AdMob iOS Documentation](https://developers.google.com/admob/ios/app-open-ads)
+- [App Open Ad Guidance - AdMob Help](https://support.google.com/admob/answer/9341964)
+- [Best Practices for App Open Ads](https://support.google.com/admob/answer/9341964)

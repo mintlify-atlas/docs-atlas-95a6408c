@@ -1,0 +1,155 @@
+---
+title: React Native Installation
+description: Install AdMob Plus in your React Native project
+---
+
+Install the AdMob Plus package and configure it for Android and iOS.
+
+## Prerequisites
+
+<Check>
+  React Native project initialized (0.60.0+)
+</Check>
+<Check>
+  AdMob account with app registered
+</Check>
+
+## Installation
+
+<Steps>
+  <Step title="Install the Package">
+    Install using your package manager:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/react-native
+    ```
+    ```bash yarn
+    yarn add @admob-plus/react-native
+    ```
+    ```bash pnpm
+    pnpm add @admob-plus/react-native
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Link Native Dependencies">
+    For React Native 0.60+, the package auto-links. Just install iOS dependencies:
+
+    ```bash
+    cd ios && pod install && cd ..
+    ```
+
+    <Note>
+      For React Native < 0.60, manual linking is required. See React Native documentation.
+    </Note>
+  </Step>
+
+  <Step title="Configure Android">
+    Add your AdMob App ID to `android/app/src/main/AndroidManifest.xml`:
+
+    ```xml title="AndroidManifest.xml"
+    <manifest>
+      <application>
+        <meta-data
+          android:name="com.google.android.gms.ads.APPLICATION_ID"
+          android:value="ca-app-pub-xxx~xxx" />
+      </application>
+    </manifest>
+    ```
+
+    <Note>
+      Replace `ca-app-pub-xxx~xxx` with your actual Android AdMob App ID.
+    </Note>
+  </Step>
+
+  <Step title="Configure iOS">
+    Add your AdMob App ID to `ios/[ProjectName]/Info.plist`:
+
+    ```xml title="Info.plist"
+    <key>GADApplicationIdentifier</key>
+    <string>ca-app-pub-xxx~xxx</string>
+    ```
+
+    <Note>
+      Replace `ca-app-pub-xxx~xxx` with your actual iOS AdMob App ID.
+    </Note>
+
+    Then reinstall pods:
+
+    ```bash
+    cd ios && pod install && cd ..
+    ```
+  </Step>
+</Steps>
+
+## Platform-Specific Setup
+
+### Android Requirements
+
+- **Minimum SDK:** 21 (Android 5.0)
+- **Google Play Services:** Automatically included via Gradle
+
+The package automatically adds the Google Mobile Ads SDK dependency.
+
+### iOS Requirements
+
+- **iOS Version:** 12.0+
+- **CocoaPods:** Required for dependency management
+
+The package includes a `.podspec` that manages the Google Mobile Ads SDK.
+
+## App Tracking Transparency (iOS)
+
+For iOS 14+, add the tracking usage description to `Info.plist`:
+
+```xml title="Info.plist"
+<key>NSUserTrackingUsageDescription</key>
+<string>This app uses your data for personalized advertising.</string>
+```
+
+Request tracking authorization in your app:
+
+```typescript
+import { AdMob } from '@admob-plus/react-native';
+
+const { status } = await AdMob.requestTrackingAuthorization();
+```
+
+## Verification
+
+Run your app to verify the installation:
+
+```bash
+# iOS
+npx react-native run-ios
+
+# Android
+npx react-native run-android
+```
+
+## Troubleshooting
+
+<Accordion title="Build fails on Android">
+  1. Clean the build: `cd android && ./gradlew clean && cd ..`
+  2. Ensure Google Play Services is available
+  3. Check that the AdMob App ID is correctly set in AndroidManifest.xml
+</Accordion>
+
+<Accordion title="Build fails on iOS">
+  1. Try reinstalling pods: `cd ios && pod deintegrate && pod install && cd ..`
+  2. Clean build folder in Xcode: Product → Clean Build Folder
+  3. Ensure the AdMob App ID is correctly set in Info.plist
+</Accordion>
+
+<Accordion title="Module not found error">
+  1. Clear Metro bundler cache: `npx react-native start --reset-cache`
+  2. Reinstall node modules: `rm -rf node_modules && npm install`
+  3. For iOS, reinstall pods: `cd ios && pod install && cd ..`
+</Accordion>
+
+## Next Steps
+
+<Card title="Usage Guide" icon="code" href="/react-native/usage">
+  Learn how to display ads in your React Native app
+</Card>

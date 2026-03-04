@@ -1,0 +1,158 @@
+---
+title: Configuration
+description: Configure AdMob SDK settings for your application
+---
+
+## Overview
+
+AdMob Plus provides configuration options to customize SDK behavior, including test devices, content ratings, and app-level settings. Configuration should be done after the SDK starts and before loading ads.
+
+## Basic Configuration
+
+### Starting the SDK
+
+Before configuring or showing ads, you must start the AdMob SDK:
+
+```javascript
+await admob.start();
+```
+
+The `start()` method initializes the SDK and returns information about the SDK version:
+
+```javascript
+const { version } = await admob.start();
+console.log(`AdMob SDK v${version}`);
+```
+
+### Applying Configuration
+
+Use the `configure()` method to set global AdMob configuration options:
+
+```javascript
+await admob.configure({
+  testDeviceIds: ['33BE2250B43518CCDA7DE426D04EE231'],
+  maxAdContentRating: 'T',
+  tagForChildDirectedTreatment: false,
+  tagForUnderAgeOfConsent: false,
+});
+```
+
+## Configuration Options
+
+### AdMobConfig Interface
+
+The `AdMobConfig` interface extends `RequestConfig` and includes:
+
+<ParamField path="testDeviceIds" type="string[]">
+  Array of test device IDs to enable test ads. See [Test Ads](/guides/test-ads) for details.
+</ParamField>
+
+<ParamField path="maxAdContentRating" type="MaxAdContentRating">
+  Maximum ad content rating for ads. Options:
+  - `'G'` - Content suitable for general audiences, including families
+  - `'PG'` - Content suitable for most audiences with parental guidance
+  - `'T'` - Content suitable for teen and older audiences
+  - `'MA'` - Content suitable only for mature audiences
+  - `''` - Content suitability is unspecified (default)
+</ParamField>
+
+<ParamField path="tagForChildDirectedTreatment" type="boolean | null">
+  Indicates whether to tag ad requests as child-directed:
+  - `true` - Tag requests as child-directed
+  - `false` - Tag requests as not child-directed
+  - `null` - Do not tag requests (default)
+</ParamField>
+
+<ParamField path="tagForUnderAgeOfConsent" type="boolean | null">
+  Indicates whether users are under the age of consent:
+  - `true` - Users are under the age of consent
+  - `false` - Users are not under the age of consent
+  - `null` - Not specified (default)
+</ParamField>
+
+<ParamField path="appMuted" type="boolean">
+  Set to `true` to mute app audio for ads.
+</ParamField>
+
+<ParamField path="appVolume" type="number">
+  Set app audio volume for ads (0.0 to 1.0).
+</ParamField>
+
+<ParamField path="publisherFirstPartyIDEnabled" type="boolean">
+  Enable publisher first-party ID for enhanced ad targeting.
+</ParamField>
+
+## Complete Example
+
+Here's a complete example showing SDK initialization and configuration:
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  try {
+    // Start the SDK
+    const { version } = await admob.start();
+    console.log(`AdMob SDK v${version}`);
+
+    // Configure SDK settings
+    await admob.configure({
+      testDeviceIds: ['33BE2250B43518CCDA7DE426D04EE231'],
+      maxAdContentRating: 'PG',
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
+      appMuted: false,
+      appVolume: 0.8,
+      publisherFirstPartyIDEnabled: true,
+    });
+
+    console.log('AdMob configured successfully');
+
+    // Now you can create and load ads
+  } catch (error) {
+    console.error('AdMob initialization failed:', error);
+  }
+}, false);
+```
+
+## Banner-Specific Configuration
+
+Banner ads support additional configuration for iOS:
+
+```javascript
+await admob.BannerAd.config({
+  backgroundColor: '#A7A7A7',
+  marginTop: 10,
+  marginBottom: 10,
+});
+```
+
+<ParamField path="backgroundColor" type="string">
+  Background color for banner ads (iOS only). Accepts any valid CSS color string.
+</ParamField>
+
+<ParamField path="marginTop" type="number">
+  Top margin for banner ads in pixels (iOS only).
+</ParamField>
+
+<ParamField path="marginBottom" type="number">
+  Bottom margin for banner ads in pixels (iOS only).
+</ParamField>
+
+## Best Practices
+
+<Tip>
+  Always call `start()` before `configure()` or creating any ads.
+</Tip>
+
+<Warning>
+  Configuration should be set once at app startup, before loading any ads. Changing configuration after ads are loaded may not affect already created ads.
+</Warning>
+
+<Note>
+  Test device IDs and content ratings can also be set per-request using `RequestConfig` when creating individual ads.
+</Note>
+
+## Related
+
+- [Test Ads](/guides/test-ads) - Learn how to use test ads during development
+- [Targeting](/guides/targeting) - Advanced ad targeting options
+- [Consent](/guides/consent) - User consent management for GDPR/CCPA

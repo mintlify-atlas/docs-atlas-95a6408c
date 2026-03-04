@@ -1,0 +1,274 @@
+---
+title: Cordova Usage
+description: Display ads in your Cordova app
+---
+
+Learn how to implement AdMob ads in your Cordova application using AdMob Plus.
+
+## Basic Setup
+
+### Import and Initialize
+
+First, import AdMob and initialize it when your app starts:
+
+```typescript
+import admob from 'admob-plus-cordova';
+
+// Wait for the Cordova deviceready event
+document.addEventListener('deviceready', onDeviceReady, false);
+
+async function onDeviceReady() {
+  await admob.start();
+  console.log('AdMob initialized');
+}
+```
+
+### Global Instance
+
+AdMob Plus provides a global `admob` instance:
+
+```javascript
+// The global admob instance is automatically available
+document.addEventListener('deviceready', async () => {
+  await admob.start();
+}, false);
+```
+
+## Displaying Ads
+
+### Banner Ad
+
+Display a banner ad at the bottom of the screen:
+
+```typescript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+  position: 'bottom',
+});
+
+await banner.show();
+```
+
+<Tip>
+  Use test ad unit IDs during development. See the [Test Ads guide](/guides/test-ads).
+</Tip>
+
+### Interstitial Ad
+
+Show a full-screen interstitial ad:
+
+```typescript
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+
+// Load the ad
+await interstitial.load();
+
+// Show when ready
+if (await interstitial.isLoaded()) {
+  await interstitial.show();
+}
+```
+
+### Rewarded Ad
+
+Implement rewarded video ads:
+
+```typescript
+const rewarded = new admob.RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+
+// Load the ad
+await rewarded.load();
+
+// Listen for reward event
+rewarded.on('reward', (reward) => {
+  console.log('User earned reward:', reward.amount, reward.type);
+  // Grant the reward to the user
+});
+
+// Show the ad
+if (await rewarded.isLoaded()) {
+  await rewarded.show();
+}
+```
+
+## Event Handling
+
+Listen to ad lifecycle events:
+
+```typescript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+
+// Listen for events
+banner.on('load', () => {
+  console.log('Banner ad loaded');
+});
+
+banner.on('loadfail', (error) => {
+  console.error('Banner ad failed to load:', error);
+});
+
+banner.on('impression', () => {
+  console.log('Banner ad impression recorded');
+});
+
+await banner.show();
+```
+
+### Global Events
+
+Listen to all ad events globally:
+
+```typescript
+document.addEventListener(admob.Events.adLoad, (event) => {
+  console.log('Ad loaded:', event.ad);
+});
+
+document.addEventListener(admob.Events.adDismiss, (event) => {
+  console.log('Ad dismissed:', event.ad);
+});
+```
+
+## Configuration
+
+### Global Configuration
+
+Configure AdMob settings:
+
+```typescript
+await admob.configure({
+  maxAdContentRating: 'PG',
+  tagForChildDirectedTreatment: false,
+  tagForUnderAgeOfConsent: false,
+  testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+});
+```
+
+### Banner Configuration (iOS)
+
+Configure banner appearance on iOS:
+
+```typescript
+import { BannerAd } from 'admob-plus-cordova';
+
+BannerAd.config({
+  backgroundColor: '#ffffff',
+  marginTop: 0,
+  marginBottom: 0,
+});
+```
+
+## Complete Example
+
+Here's a complete example showing multiple ad types:
+
+```typescript
+import admob, { BannerAd, InterstitialAd, RewardedAd } from 'admob-plus-cordova';
+
+class AdManager {
+  private banner: BannerAd | null = null;
+  private interstitial: InterstitialAd | null = null;
+  private rewarded: RewardedAd | null = null;
+
+  async initialize() {
+    await admob.start();
+    
+    await admob.configure({
+      testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+    });
+  }
+
+  async showBanner() {
+    this.banner = new BannerAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+      position: 'bottom',
+    });
+
+    await this.banner.show();
+  }
+
+  async showInterstitial() {
+    this.interstitial = new InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    await this.interstitial.load();
+    
+    this.interstitial.on('dismiss', () => {
+      // Preload next interstitial
+      this.interstitial = new InterstitialAd({
+        adUnitId: 'ca-app-pub-xxx/xxx',
+      });
+      this.interstitial.load();
+    });
+
+    if (await this.interstitial.isLoaded()) {
+      await this.interstitial.show();
+    }
+  }
+
+  async showRewarded() {
+    this.rewarded = new RewardedAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    await this.rewarded.load();
+
+    this.rewarded.on('reward', (reward) => {
+      console.log(`Reward: ${reward.amount} ${reward.type}`);
+      // Grant reward to user
+    });
+
+    if (await this.rewarded.isLoaded()) {
+      await this.rewarded.show();
+    }
+  }
+}
+
+// Usage
+document.addEventListener('deviceready', async () => {
+  const adManager = new AdManager();
+  await adManager.initialize();
+  await adManager.showBanner();
+}, false);
+```
+
+## Best Practices
+
+<Check>
+  Always wait for the `deviceready` event before initializing AdMob
+</Check>
+<Check>
+  Preload interstitial and rewarded ads before showing them
+</Check>
+<Check>
+  Use test ad unit IDs during development
+</Check>
+<Check>
+  Handle ad load failures gracefully
+</Check>
+<Check>
+  Respect user privacy and comply with GDPR/CCPA regulations
+</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ad Formats" icon="rectangle-ad" href="/ad-formats/banner">
+    Explore all available ad formats
+  </Card>
+  <Card title="Events" icon="bolt" href="/guides/events">
+    Learn about ad lifecycle events
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Advanced configuration options
+  </Card>
+  <Card title="Consent" icon="shield-check" href="/guides/consent">
+    Implement GDPR/CCPA consent
+  </Card>
+</CardGroup>

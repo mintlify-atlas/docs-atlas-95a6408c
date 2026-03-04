@@ -1,0 +1,462 @@
+---
+title: Ad Events
+description: Handle ad lifecycle events and respond to user interactions
+---
+
+## Overview
+
+AdMob Plus provides a comprehensive event system to track ad lifecycle and user interactions. Events allow you to respond to ad loading, showing, dismissal, clicks, and more.
+
+## Event System
+
+There are two ways to listen for ad events:
+
+1. **Global events** - Listen to all ad events using `document.addEventListener()`
+2. **Ad-specific events** - Listen to events for a specific ad instance using `ad.on()`
+
+## Global Events
+
+All AdMob events are fired as document events and can be listened to globally.
+
+### Available Events
+
+The `Events` enum defines all available event names:
+
+```javascript
+admob.Events.ready           // 'admob.ready'
+admob.Events.adClick         // 'admob.ad.click'
+admob.Events.adDismiss       // 'admob.ad.dismiss'
+admob.Events.adImpression    // 'admob.ad.impression'
+admob.Events.adLoad          // 'admob.ad.load'
+admob.Events.adLoadFail      // 'admob.ad.loadfail'
+admob.Events.adReward        // 'admob.ad.reward'
+admob.Events.adShow          // 'admob.ad.show'
+admob.Events.adShowFail      // 'admob.ad.showfail'
+admob.Events.bannerSize      // 'admob.banner.size'
+```
+
+### Listening to Global Events
+
+Use `document.addEventListener()` to listen to all ad events:
+
+```javascript
+// Listen to all ad load events
+document.addEventListener('admob.ad.load', (event) => {
+  console.log('Ad loaded:', event.ad.adUnitId);
+}, false);
+
+// Listen to all ad dismiss events
+document.addEventListener('admob.ad.dismiss', (event) => {
+  console.log('Ad dismissed:', event.ad.id);
+}, false);
+
+// Using Events enum (recommended)
+document.addEventListener(admob.Events.adClick, (event) => {
+  console.log('Ad clicked:', event.ad.adUnitId);
+}, false);
+```
+
+### Event Object Properties
+
+All events include these common properties:
+
+<ParamField path="ad" type="MobileAd">
+  The ad instance that triggered the event. Access properties like `ad.id` and `ad.adUnitId`.
+</ParamField>
+
+<ParamField path="adId" type="string">
+  The unique identifier for the ad instance.
+</ParamField>
+
+<ParamField path="type" type="string">
+  The event type (e.g., 'admob.ad.load').
+</ParamField>
+
+## Ad-Specific Events
+
+Listen to events for a specific ad instance using the `on()` method:
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+});
+
+// Listen to load event for this specific banner
+const unsubscribe = banner.on('load', (event) => {
+  console.log('Banner loaded:', event.ad.id);
+});
+
+// Unsubscribe when no longer needed
+unsubscribe();
+```
+
+### Event Listener Return Value
+
+The `on()` method returns an unsubscribe function:
+
+```javascript
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+});
+
+const unsubscribe = interstitial.on('dismiss', () => {
+  console.log('Interstitial dismissed');
+});
+
+// Automatically unsubscribe after 60 seconds
+setTimeout(() => {
+  console.log('Unsubscribing from event');
+  unsubscribe();
+}, 60 * 1000);
+```
+
+## Event Reference
+
+### ready
+
+**Event:** `admob.ready`
+
+Fired when the AdMob SDK is ready to use.
+
+```javascript
+document.addEventListener(admob.Events.ready, () => {
+  console.log('AdMob SDK ready');
+}, false);
+```
+
+### adLoad
+
+**Event:** `admob.ad.load`
+
+Fired when an ad successfully loads.
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+});
+
+banner.on('load', (event) => {
+  console.log('Ad loaded:', event.ad.adUnitId);
+});
+
+await banner.show();
+```
+
+### adLoadFail
+
+**Event:** `admob.ad.loadfail`
+
+Fired when an ad fails to load.
+
+```javascript
+interstitial.on('loadfail', (event) => {
+  console.error('Ad failed to load:', event.error);
+});
+```
+
+### adShow
+
+**Event:** `admob.ad.show`
+
+Fired when an ad is shown to the user.
+
+```javascript
+interstitial.on('show', (event) => {
+  console.log('Ad shown:', event.ad.id);
+});
+```
+
+### adShowFail
+
+**Event:** `admob.ad.showfail`
+
+Fired when an ad fails to show.
+
+```javascript
+rewarded.on('showfail', (event) => {
+  console.error('Ad failed to show:', event.error);
+});
+```
+
+### adClick
+
+**Event:** `admob.ad.click`
+
+Fired when a user clicks on an ad.
+
+```javascript
+banner.on('click', (event) => {
+  console.log('User clicked ad:', event.ad.adUnitId);
+});
+```
+
+### adImpression
+
+**Event:** `admob.ad.impression`
+
+Fired when an ad impression is recorded.
+
+```javascript
+banner.on('impression', (event) => {
+  console.log('Ad impression recorded:', event.ad.id);
+});
+```
+
+### adDismiss
+
+**Event:** `admob.ad.dismiss`
+
+Fired when a user dismisses an ad.
+
+```javascript
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+});
+
+interstitial.on('dismiss', (event) => {
+  console.log('Ad dismissed:', event.ad.id);
+  // Load next ad or continue app flow
+});
+
+await interstitial.load();
+await interstitial.show();
+```
+
+### adReward
+
+**Event:** `admob.ad.reward`
+
+Fired when a user earns a reward from a rewarded ad.
+
+```javascript
+const rewarded = new admob.RewardedAd({
+  adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+});
+
+rewarded.on('reward', (event) => {
+  const { reward } = event;
+  console.log(`User earned reward: ${reward.amount} ${reward.type}`);
+  // Grant the reward to the user
+});
+
+await rewarded.load();
+await rewarded.show();
+```
+
+**Reward object properties:**
+- `amount` (number) - The reward amount
+- `type` (string) - The reward type (e.g., "coins", "gems")
+
+### bannerSize
+
+**Event:** `admob.banner.size`
+
+Fired when a banner ad's size changes (useful for adaptive banners).
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+  size: { adaptive: 'anchored' },
+});
+
+banner.on(admob.Events.bannerSize, (event) => {
+  console.log(`Banner size: ${event.width}x${event.height}`);
+});
+
+await banner.show();
+```
+
+## Complete Examples
+
+### Interstitial with Full Event Handling
+
+```javascript
+function showInterstitial() {
+  const interstitial = new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+  });
+
+  // Track loading
+  interstitial.on('load', () => {
+    console.log('Interstitial loaded successfully');
+  });
+
+  interstitial.on('loadfail', (event) => {
+    console.error('Failed to load interstitial:', event.error);
+  });
+
+  // Track showing
+  interstitial.on('show', () => {
+    console.log('Interstitial shown to user');
+  });
+
+  interstitial.on('showfail', (event) => {
+    console.error('Failed to show interstitial:', event.error);
+  });
+
+  // Track user interaction
+  interstitial.on('click', () => {
+    console.log('User clicked interstitial');
+  });
+
+  interstitial.on('impression', () => {
+    console.log('Interstitial impression recorded');
+  });
+
+  interstitial.on('dismiss', () => {
+    console.log('Interstitial dismissed');
+    // Resume game or continue app flow
+  });
+
+  // Load and show
+  interstitial.load().then(() => interstitial.show());
+}
+```
+
+### Rewarded Ad with Reward Handling
+
+```javascript
+function showRewardedAd() {
+  const rewarded = new admob.RewardedAd({
+    adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+  });
+
+  let rewardEarned = false;
+
+  // Handle reward
+  rewarded.on('reward', (event) => {
+    rewardEarned = true;
+    const { reward } = event;
+    console.log(`User earned: ${reward.amount} ${reward.type}`);
+    // Grant reward to user
+    grantReward(reward.amount, reward.type);
+  });
+
+  // Handle dismissal
+  rewarded.on('dismiss', () => {
+    if (rewardEarned) {
+      console.log('User watched ad and earned reward');
+    } else {
+      console.log('User closed ad before completing');
+    }
+  });
+
+  // Handle errors
+  rewarded.on('loadfail', (event) => {
+    console.error('Failed to load rewarded ad:', event.error);
+    showRewardUnavailableMessage();
+  });
+
+  rewarded.on('showfail', (event) => {
+    console.error('Failed to show rewarded ad:', event.error);
+  });
+
+  // Load and show
+  rewarded.load().then(() => rewarded.show());
+}
+
+function grantReward(amount, type) {
+  // Your reward granting logic
+  console.log(`Granting ${amount} ${type} to user`);
+}
+```
+
+### Banner with Size Tracking
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+  size: { adaptive: 'anchored' },
+  position: 'bottom',
+});
+
+// Track banner size for layout adjustments
+banner.on(admob.Events.bannerSize, (event) => {
+  const { width, height } = event;
+  console.log(`Banner size: ${width}x${height}`);
+  
+  // Adjust your app layout
+  adjustContentMargin(height);
+});
+
+banner.on('load', () => {
+  console.log('Banner loaded');
+});
+
+banner.on('loadfail', (event) => {
+  console.error('Banner failed to load:', event.error);
+});
+
+banner.show();
+
+function adjustContentMargin(bannerHeight) {
+  document.getElementById('content').style.marginBottom = `${bannerHeight}px`;
+}
+```
+
+### Global Event Monitoring
+
+```javascript
+// Monitor all ad events globally for analytics
+const eventHandlers = {
+  [admob.Events.adLoad]: (event) => {
+    analytics.track('Ad Loaded', { adId: event.ad.id });
+  },
+  [admob.Events.adLoadFail]: (event) => {
+    analytics.track('Ad Load Failed', { adId: event.ad.id, error: event.error });
+  },
+  [admob.Events.adShow]: (event) => {
+    analytics.track('Ad Shown', { adId: event.ad.id });
+  },
+  [admob.Events.adClick]: (event) => {
+    analytics.track('Ad Clicked', { adId: event.ad.id });
+  },
+  [admob.Events.adImpression]: (event) => {
+    analytics.track('Ad Impression', { adId: event.ad.id });
+  },
+  [admob.Events.adDismiss]: (event) => {
+    analytics.track('Ad Dismissed', { adId: event.ad.id });
+  },
+  [admob.Events.adReward]: (event) => {
+    analytics.track('Ad Reward Earned', {
+      adId: event.ad.id,
+      amount: event.reward.amount,
+      type: event.reward.type,
+    });
+  },
+};
+
+// Register all event handlers
+Object.entries(eventHandlers).forEach(([eventName, handler]) => {
+  document.addEventListener(eventName, handler, false);
+});
+```
+
+## Best Practices
+
+<Tip>
+  Use ad-specific events (`ad.on()`) when you only care about events from a specific ad instance.
+</Tip>
+
+<Tip>
+  Use global events (`document.addEventListener()`) for analytics, logging, or handling events from all ads uniformly.
+</Tip>
+
+<Warning>
+  Always handle `loadfail` and `showfail` events to gracefully handle ad errors.
+</Warning>
+
+<Note>
+  The `dismiss` event is your signal to continue app flow or load the next ad.
+</Note>
+
+<Check>
+  Remember to unsubscribe from events when they're no longer needed to prevent memory leaks.
+</Check>
+
+## Related
+
+- [Configuration](/guides/configuration) - Configure AdMob SDK
+- [Banner Ads](/cordova/ads/banner) - Banner ad implementation
+- [Interstitial Ads](/cordova/ads/interstitial) - Interstitial ad implementation
+- [Rewarded Ads](/cordova/ads/rewarded) - Rewarded ad implementation

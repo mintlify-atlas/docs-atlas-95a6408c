@@ -1,0 +1,266 @@
+---
+title: Test Ads
+description: Use test ads during development to avoid policy violations
+---
+
+## Overview
+
+It is critical to use test ads during development so that you can click on them without charging Google advertisers. If you click on too many ads without being in test mode, you risk your account being flagged for invalid activity.
+
+<Warning>
+  Never use production ad unit IDs during development. Always use test ads to avoid account suspension.
+</Warning>
+
+## Method 1: Google Demo Ad Units
+
+The quickest way to enable testing is to use Google-provided test ad units. These ad units are not associated with your AdMob account, so there's no risk of your account generating invalid traffic.
+
+### Test Ad Unit IDs
+
+| Ad Format | Android Demo ID | iOS Demo ID |
+|-----------|----------------|-------------|
+| App Open | `ca-app-pub-3940256099942544/9257395921` | `ca-app-pub-3940256099942544/5662855259` |
+| Banner | `ca-app-pub-3940256099942544/6300978111` | `ca-app-pub-3940256099942544/2934735716` |
+| Interstitial | `ca-app-pub-3940256099942544/1033173712` | `ca-app-pub-3940256099942544/4411468910` |
+| Interstitial Video | `ca-app-pub-3940256099942544/8691691433` | `ca-app-pub-3940256099942544/5135589807` |
+| Rewarded | `ca-app-pub-3940256099942544/5224354917` | `ca-app-pub-3940256099942544/1712485313` |
+| Rewarded Interstitial | `ca-app-pub-3940256099942544/5354046379` | `ca-app-pub-3940256099942544/6978759866` |
+| Native Advanced | `ca-app-pub-3940256099942544/2247696110` | `ca-app-pub-3940256099942544/3986624511` |
+| Native Advanced Video | `ca-app-pub-3940256099942544/1044960115` | `ca-app-pub-3940256099942544/2521693316` |
+
+<Tip>
+  Run `npx admob-plus test-ids` in your terminal to display this table.
+</Tip>
+
+### Using Demo Ad Units
+
+Simply use these test ad unit IDs when creating ads:
+
+```javascript
+// Banner ad with test ad unit
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Test ID
+});
+await banner.show();
+
+// Interstitial ad with test ad unit
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-3940256099942544/1033173712', // Test ID
+});
+await interstitial.load();
+await interstitial.show();
+
+// Rewarded ad with test ad unit
+const rewarded = new admob.RewardedAd({
+  adUnitId: 'ca-app-pub-3940256099942544/5224354917', // Test ID
+});
+await rewarded.load();
+await rewarded.show();
+```
+
+<Note>
+  Remember to replace test ad unit IDs with your production ad unit IDs before releasing your app.
+</Note>
+
+## Method 2: Test Device IDs
+
+Another way to test is to register your device as a test device. This allows you to use your real ad unit IDs while still receiving test ads.
+
+### Step 1: Get Your Test Device ID
+
+Load your ads-integrated app and make an ad request. Your test device ID will be printed to the console/logcat output.
+
+**Android (logcat):**
+```
+I/Ads: Use RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("33BE2250B43518CCDA7DE426D04EE231"))
+```
+
+**iOS (Xcode console):**
+```
+<Google> To enable debug mode for this device, set:
+  GADMobileAds.sharedInstance.requestConfiguration.testDeviceIdentifiers = @[ @"33BE2250B43518CCDA7DE426D04EE231" ];
+```
+
+### Step 2: Configure Test Device IDs
+
+Add your test device ID using the `configure()` method:
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  await admob.start();
+  
+  // Configure test devices
+  await admob.configure({
+    testDeviceIds: ['33BE2250B43518CCDA7DE426D04EE231'],
+  });
+  
+  // Now use your real ad unit IDs
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY', // Your real ad unit
+  });
+  await banner.show();
+}, false);
+```
+
+### Multiple Test Devices
+
+You can register multiple test devices:
+
+```javascript
+await admob.configure({
+  testDeviceIds: [
+    '33BE2250B43518CCDA7DE426D04EE231', // Device 1
+    'B6D3A0A9F0D6D3C9E7F8A4B2C1D3E4F5', // Device 2
+    'C7E4B1BAF1E7E4DAF8G9B5C3D2E4F5G6', // Device 3
+  ],
+});
+```
+
+### Step 3: Verify Test Ads
+
+When configured correctly, test ads will display a "Test Ad" label:
+
+- Google ads will show a **"Test Ad"** label centered at the top of the ad
+- These ads are safe to click without risk to your account
+- Test ad requests, impressions, and clicks will not appear in your account reports
+
+<Tip>
+  Android emulators and iOS simulators are automatically configured as test devices. You don't need to add their device IDs.
+</Tip>
+
+## Complete Example
+
+Here's a complete example using both methods:
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  try {
+    // Start AdMob
+    const { version } = await admob.start();
+    console.log(`AdMob SDK v${version}`);
+
+    // Configure test devices
+    await admob.configure({
+      testDeviceIds: ['33BE2250B43518CCDA7DE426D04EE231'],
+    });
+
+    // Example 1: Using demo ad unit (recommended for testing)
+    const testBanner = new admob.BannerAd({
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+    });
+    await testBanner.show();
+
+    // Example 2: Using your real ad unit with test device ID
+    const productionBanner = new admob.BannerAd({
+      adUnitId: 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY',
+    });
+    await productionBanner.show();
+
+    // Both will show test ads with the "Test Ad" label
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}, false);
+```
+
+## Environment-Based Configuration
+
+For a production app, conditionally use test ads based on build configuration:
+
+```javascript
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const AD_UNITS = {
+  banner: isDevelopment 
+    ? 'ca-app-pub-3940256099942544/6300978111' // Test ID
+    : 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY', // Production ID
+  interstitial: isDevelopment
+    ? 'ca-app-pub-3940256099942544/1033173712' // Test ID
+    : 'ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ', // Production ID
+};
+
+// Use in your app
+const banner = new admob.BannerAd({
+  adUnitId: AD_UNITS.banner,
+});
+```
+
+## Debugging Tips
+
+### Verify Test Mode is Active
+
+1. Load an ad in your app
+2. Look for the "Test Ad" label on the ad
+3. If you don't see the label, check:
+   - Device ID is correctly copied (no spaces or extra characters)
+   - `configure()` was called before loading ads
+   - You're testing on the correct device
+
+### Common Issues
+
+<Warning>
+  **Issue:** Ads show "Test Ad" label in production build
+  
+  **Solution:** Remove test device IDs and use production ad unit IDs before release.
+</Warning>
+
+<Warning>
+  **Issue:** No ads shown during testing
+  
+  **Solution:** Ensure you're using valid test ad unit IDs from the table above. Check console for error messages.
+</Warning>
+
+## Before Going to Production
+
+Before releasing your app:
+
+<Steps>
+  <Step title="Remove Test Device IDs">
+    Remove or comment out the `testDeviceIds` configuration:
+    
+    ```javascript
+    await admob.configure({
+      // testDeviceIds: ['33BE2250B43518CCDA7DE426D04EE231'], // Remove this
+    });
+    ```
+  </Step>
+  
+  <Step title="Replace Ad Unit IDs">
+    Replace all test ad unit IDs with your production ad unit IDs from the AdMob console.
+  </Step>
+  
+  <Step title="Test Production Build">
+    Test your production build to ensure:
+    - Ads load correctly
+    - No "Test Ad" labels appear
+    - Ads are appropriate for your content rating
+  </Step>
+</Steps>
+
+## Best Practices
+
+<Check>
+  Use Google's demo ad units during initial development
+</Check>
+
+<Check>
+  Use test device IDs when testing with your real ad units
+</Check>
+
+<Check>
+  Never click on production ads, even during testing
+</Check>
+
+<Check>
+  Remove all test configurations before releasing to production
+</Check>
+
+<Check>
+  Use environment variables to switch between test and production ad units
+</Check>
+
+## Related
+
+- [Configuration](/guides/configuration) - Configure AdMob SDK settings
+- [AdMob Test Ads Documentation](https://developers.google.com/admob/android/test-ads)
+- [How to Test Your Ads](https://support.google.com/admob/answer/9388275)

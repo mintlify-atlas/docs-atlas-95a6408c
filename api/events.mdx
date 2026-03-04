@@ -1,0 +1,251 @@
+---
+title: Events
+description: AdMob event types for tracking ad lifecycle and user interactions
+---
+
+The `Events` enum defines all event types emitted by the AdMob SDK. These events allow you to track the ad lifecycle, handle user interactions, and respond to ad loading and display outcomes.
+
+## Enum Definition
+
+```typescript
+enum Events {
+  adClick = "admob.ad.click",
+  adDismiss = "admob.ad.dismiss",
+  adImpression = "admob.ad.impression",
+  adLoad = "admob.ad.load",
+  adLoadFail = "admob.ad.loadfail",
+  adReward = "admob.ad.reward",
+  adShow = "admob.ad.show",
+  adShowFail = "admob.ad.showfail",
+  bannerSize = "admob.banner.size",
+  ready = "admob.ready",
+}
+```
+
+## Event Types
+
+<ParamField path="ready" type="string" default="admob.ready">
+  Fired when the AdMob SDK is initialized and ready to load ads.
+  
+  **When to use:** Listen for this event before loading your first ad to ensure the SDK is fully initialized.
+</ParamField>
+
+<ParamField path="adLoad" type="string" default="admob.ad.load">
+  Fired when an ad successfully loads and is ready to be displayed.
+  
+  **Event data:** Contains information about the loaded ad.
+</ParamField>
+
+<ParamField path="adLoadFail" type="string" default="admob.ad.loadfail">
+  Fired when an ad fails to load.
+  
+  **Event data:** Contains error information explaining why the ad failed to load.
+</ParamField>
+
+<ParamField path="adShow" type="string" default="admob.ad.show">
+  Fired when an ad is displayed on screen.
+  
+  **When to use:** Use this event to pause app activities or track ad impressions.
+</ParamField>
+
+<ParamField path="adShowFail" type="string" default="admob.ad.showfail">
+  Fired when an ad fails to display.
+  
+  **Event data:** Contains error information explaining why the ad failed to show.
+</ParamField>
+
+<ParamField path="adClick" type="string" default="admob.ad.click">
+  Fired when a user clicks on an ad.
+  
+  **When to use:** Use this event for analytics tracking or to prepare for the user leaving your app.
+</ParamField>
+
+<ParamField path="adDismiss" type="string" default="admob.ad.dismiss">
+  Fired when an ad is dismissed or closed by the user.
+  
+  **When to use:** Resume app activities or load the next ad after this event.
+</ParamField>
+
+<ParamField path="adImpression" type="string" default="admob.ad.impression">
+  Fired when an ad impression is recorded.
+  
+  **When to use:** Track ad impressions for analytics purposes.
+</ParamField>
+
+<ParamField path="adReward" type="string" default="admob.ad.reward">
+  Fired when a user earns a reward from a rewarded ad.
+  
+  **Event data:** Contains reward information (amount and type).
+  
+  **When to use:** Grant in-app rewards to the user when this event fires.
+</ParamField>
+
+<ParamField path="bannerSize" type="string" default="admob.banner.size">
+  Fired when a banner ad's size changes.
+  
+  **Event data:** Contains the new banner dimensions.
+  
+  **When to use:** Adjust your app's layout to accommodate the banner size.
+</ParamField>
+
+## Usage Examples
+
+### Listening to Events
+
+```typescript
+import { AdMob, Events } from '@admob-plus/cordova';
+
+// Wait for AdMob to be ready
+document.addEventListener(Events.ready, () => {
+  console.log('AdMob SDK is ready');
+});
+
+// Handle ad load success
+document.addEventListener(Events.adLoad, (event) => {
+  console.log('Ad loaded:', event);
+});
+
+// Handle ad load failure
+document.addEventListener(Events.adLoadFail, (event) => {
+  console.error('Ad failed to load:', event);
+});
+```
+
+### Interstitial Ad Lifecycle
+
+```typescript
+import { AdMob, Events, InterstitialAd } from '@admob-plus/cordova';
+
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+});
+
+// Ad is ready to show
+document.addEventListener(Events.adLoad, (event) => {
+  if (event.ad.id === interstitial.id) {
+    console.log('Interstitial loaded, ready to show');
+    interstitial.show();
+  }
+});
+
+// User dismissed the ad
+document.addEventListener(Events.adDismiss, (event) => {
+  if (event.ad.id === interstitial.id) {
+    console.log('Interstitial dismissed');
+    // Load next ad
+    interstitial.load();
+  }
+});
+
+await interstitial.load();
+```
+
+### Rewarded Ad with Reward Handling
+
+```typescript
+import { AdMob, Events, RewardedAd } from '@admob-plus/cordova';
+
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+});
+
+// Grant reward to user
+document.addEventListener(Events.adReward, (event) => {
+  if (event.ad.id === rewarded.id) {
+    const { amount, type } = event.reward;
+    console.log(`User earned ${amount} ${type}`);
+    // Grant reward in your app
+    grantReward(amount, type);
+  }
+});
+
+// Ad dismissed - load next one
+document.addEventListener(Events.adDismiss, (event) => {
+  if (event.ad.id === rewarded.id) {
+    rewarded.load();
+  }
+});
+
+await rewarded.load();
+```
+
+### Banner Size Handling
+
+```typescript
+import { AdMob, Events, BannerAd } from '@admob-plus/cordova';
+
+const banner = new BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+});
+
+// Adjust layout when banner size changes
+document.addEventListener(Events.bannerSize, (event) => {
+  if (event.ad.id === banner.id) {
+    const { width, height } = event.size;
+    console.log(`Banner size: ${width}x${height}`);
+    // Adjust your app layout
+    adjustLayoutForBanner(height);
+  }
+});
+
+await banner.show();
+```
+
+### Error Handling
+
+```typescript
+import { AdMob, Events } from '@admob-plus/cordova';
+
+// Handle load failures
+document.addEventListener(Events.adLoadFail, (event) => {
+  console.error('Failed to load ad:', event.error);
+  // Implement retry logic or fallback
+});
+
+// Handle show failures
+document.addEventListener(Events.adShowFail, (event) => {
+  console.error('Failed to show ad:', event.error);
+  // Handle the error gracefully
+});
+```
+
+## Event Data Structure
+
+Most events include data about the ad and event-specific information:
+
+```typescript
+interface AdEvent {
+  ad: {
+    id: number;
+    adUnitId: string;
+  };
+  // Additional properties depending on event type
+}
+```
+
+### adReward Event
+
+```typescript
+interface RewardEvent extends AdEvent {
+  reward: {
+    amount: number;
+    type: string;
+  };
+}
+```
+
+### bannerSize Event
+
+```typescript
+interface BannerSizeEvent extends AdEvent {
+  size: {
+    width: number;
+    height: number;
+  };
+}
+```
+
+## Related
+
+- [AdMobConfig](/api/admob-config) - SDK configuration options
+- [RequestConfig](/api/request-config) - Ad request configuration

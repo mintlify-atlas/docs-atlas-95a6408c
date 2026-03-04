@@ -1,0 +1,82 @@
+---
+title: AdMobConfig
+description: Configuration interface for AdMob SDK initialization
+---
+
+The `AdMobConfig` interface defines the configuration options for initializing the AdMob SDK. It extends `RequestConfig` to include both global ad request settings and app-level settings.
+
+## Interface
+
+```typescript
+interface AdMobConfig extends RequestConfig {
+  appMuted?: boolean;
+  appVolume?: number;
+  sameAppKey?: boolean; // deprecated
+  publisherFirstPartyIDEnabled?: boolean;
+}
+```
+
+## Properties
+
+<ParamField path="appMuted" type="boolean" optional>
+  Controls whether the app's audio is muted for ads. When set to `true`, ad audio will be muted.
+</ParamField>
+
+<ParamField path="appVolume" type="number" optional>
+  Sets the app's audio volume for ads. Value should be between 0.0 (silent) and 1.0 (full volume).
+</ParamField>
+
+<ParamField path="publisherFirstPartyIDEnabled" type="boolean" optional>
+  Enables publisher-provided first-party identifiers for improved ad targeting and measurement.
+</ParamField>
+
+<ParamField path="sameAppKey" type="boolean" optional deprecated>
+  **Deprecated**: Use `publisherFirstPartyIDEnabled` instead.
+</ParamField>
+
+### Inherited from RequestConfig
+
+<ParamField path="maxAdContentRating" type="MaxAdContentRating" optional>
+  Maximum ad content rating for ads shown in the app. See [RequestConfig](/api/request-config) for details.
+</ParamField>
+
+<ParamField path="tagForChildDirectedTreatment" type="boolean | null" optional>
+  Indicates whether to tag ad requests for child-directed treatment. See [RequestConfig](/api/request-config) for details.
+</ParamField>
+
+<ParamField path="tagForUnderAgeOfConsent" type="boolean | null" optional>
+  Indicates whether the user is under the age of consent. See [RequestConfig](/api/request-config) for details.
+</ParamField>
+
+<ParamField path="testDeviceIds" type="string[]" optional>
+  Array of test device IDs for receiving test ads. See [RequestConfig](/api/request-config) for details.
+</ParamField>
+
+## Usage Example
+
+```typescript
+import { AdMob } from '@admob-plus/cordova';
+
+// Configure AdMob with global settings
+await AdMob.configure({
+  // App audio settings
+  appMuted: false,
+  appVolume: 0.8,
+  
+  // Privacy and compliance
+  publisherFirstPartyIDEnabled: true,
+  tagForChildDirectedTreatment: false,
+  tagForUnderAgeOfConsent: false,
+  
+  // Ad content rating
+  maxAdContentRating: 'PG',
+  
+  // Testing
+  testDeviceIds: ['DEVICE_ID_1', 'DEVICE_ID_2']
+});
+```
+
+## Related
+
+- [RequestConfig](/api/request-config) - Base configuration for ad requests
+- [Events](/api/events) - AdMob event types

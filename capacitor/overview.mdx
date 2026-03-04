@@ -1,0 +1,83 @@
+---
+title: Capacitor Overview
+description: AdMob Plus integration for Capacitor
+---
+
+AdMob Plus provides a native Capacitor plugin for integrating Google AdMob into your Capacitor applications.
+
+## Package Information
+
+**Package Name:** `@admob-plus/capacitor`
+
+**Version:** 2.0.0-alpha.4
+
+**Capacitor Compatibility:** 3.0.0+
+
+**Platforms:** Android, iOS
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Native Performance" icon="bolt">
+    Native plugin implementation for optimal performance
+  </Card>
+  <Card title="TypeScript First" icon="code">
+    Built with TypeScript for excellent IDE support
+  </Card>
+  <Card title="All Ad Formats" icon="rectangle-ad">
+    Banner, Interstitial, Rewarded, Native, and App Open ads
+  </Card>
+  <Card title="Capacitor 5 Ready" icon="rocket">
+    Compatible with Capacitor 5.x
+  </Card>
+</CardGroup>
+
+## What You'll Learn
+
+This section covers Capacitor integration:
+
+- [Installation](/capacitor/installation) - Add the plugin to your project
+- [Usage](/capacitor/usage) - Implement ads in your app
+
+## Plugin Architecture
+
+The plugin follows Capacitor's plugin architecture:
+
+```typescript
+import { AdMobPlus } from '@admob-plus/capacitor';
+
+// Start AdMob
+await AdMobPlus.start();
+
+// Create an ad
+await AdMobPlus.adCreate({
+  adUnitId: 'ca-app-pub-xxx/xxx',
+});
+```
+
+## Capacitor Compatibility
+
+- **Capacitor Core:** 3.0.0+
+- **iOS:** 12.0+
+- **Android:** API 21+
+
+## Repository
+
+<Card
+  title="View on GitHub"
+  icon="github"
+  href="https://github.com/admob-plus/admob-plus"
+>
+  Open source and actively maintained
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/capacitor/installation">
+    Install the plugin in your Capacitor project
+  </Card>
+  <Card title="Usage Guide" icon="book" href="/capacitor/usage">
+    Learn how to display ads
+  </Card>
+</CardGroup>

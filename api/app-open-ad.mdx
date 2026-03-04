@@ -1,0 +1,303 @@
+---
+title: AppOpenAd
+description: API reference for the AppOpenAd class
+---
+
+<RequestExample>
+```typescript
+import { AppOpenAd } from 'admob-plus-cordova'
+
+const appOpenAd = new AppOpenAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await appOpenAd.load()
+await appOpenAd.show()
+```
+</RequestExample>
+
+AppOpenAd is a special ad format designed to monetize app load screens. These ads appear when users open or switch back to your app, providing a seamless monetization opportunity.
+
+## Constructor
+
+<ParamField path="options" type="MobileAdOptions" required>
+  Configuration options for the app open ad
+  
+  <Expandable title="properties">
+    <ParamField path="adUnitId" type="string" required>
+      Your AdMob ad unit ID
+    </ParamField>
+    
+    <ParamField path="id" type="string">
+      Custom identifier for the ad instance. Defaults to `adUnitId`
+    </ParamField>
+    
+    <ParamField path="contentUrl" type="string">
+      Content URL for targeting purposes
+    </ParamField>
+    
+    <ParamField path="keywords" type="string[]">
+      Keywords for ad targeting
+    </ParamField>
+    
+    <ParamField path="npa" type="'1'">
+      Set to '1' to enable non-personalized ads (for GDPR compliance)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Methods
+
+### load()
+
+Loads the app open ad. Should be called when the app starts or goes to background.
+
+```typescript
+await appOpenAd.load()
+```
+
+**Returns:** `Promise<void>`
+
+### show()
+
+Displays the app open ad. The ad must be loaded first.
+
+```typescript
+const shown = await appOpenAd.show()
+if (shown) {
+  console.log('App open ad was shown')
+}
+```
+
+**Returns:** `Promise<boolean>` - True if the ad was shown, false otherwise
+
+### isLoaded()
+
+Checks if the app open ad is loaded and ready to show.
+
+```typescript
+const loaded = await appOpenAd.isLoaded()
+if (loaded) {
+  await appOpenAd.show()
+}
+```
+
+**Returns:** `Promise<boolean>` - True if the ad is loaded, false otherwise
+
+### on()
+
+Registers an event listener for ad events.
+
+```typescript
+const unsubscribe = appOpenAd.on('load', (event) => {
+  console.log('App open ad loaded', event)
+})
+
+// Later, to remove the listener:
+unsubscribe()
+```
+
+<ParamField path="eventName" type="string" required>
+  Name of the event to listen for. Common events:
+  - `load` - Ad has loaded
+  - `loadfail` - Ad failed to load
+  - `show` - Ad is showing
+  - `showfail` - Ad failed to show
+  - `dismiss` - User dismissed the ad
+  - `impression` - Ad impression recorded
+</ParamField>
+
+<ParamField path="callback" type="function" required>
+  Function to call when the event occurs
+</ParamField>
+
+**Returns:** `() => void` - Function to remove the event listener
+
+## Properties
+
+<ResponseField name="id" type="string">
+  The unique identifier for this ad instance
+</ResponseField>
+
+<ResponseField name="adUnitId" type="string">
+  The AdMob ad unit ID
+</ResponseField>
+
+## Examples
+
+### Basic Usage
+
+```typescript
+const appOpenAd = new AppOpenAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await appOpenAd.load()
+await appOpenAd.show()
+```
+
+### On App Launch
+
+```typescript
+const appOpenAd = new AppOpenAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+// Load ad when app starts
+document.addEventListener('deviceready', async () => {
+  await appOpenAd.load()
+  
+  // Show ad after a brief delay
+  setTimeout(async () => {
+    if (await appOpenAd.isLoaded()) {
+      await appOpenAd.show()
+    }
+  }, 1000)
+})
+```
+
+### On App Resume
+
+```typescript
+const appOpenAd = new AppOpenAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+let lastAdTime = 0
+const AD_FREQUENCY = 4 * 60 * 60 * 1000 // 4 hours
+
+document.addEventListener('resume', async () => {
+  const now = Date.now()
+  
+  // Only show if enough time has passed
+  if (now - lastAdTime > AD_FREQUENCY) {
+    if (await appOpenAd.isLoaded()) {
+      const shown = await appOpenAd.show()
+      if (shown) {
+        lastAdTime = now
+      }
+    } else {
+      await appOpenAd.load()
+    }
+  }
+})
+
+// Preload first ad
+await appOpenAd.load()
+```
+
+### With Event Listeners
+
+```typescript
+const appOpenAd = new AppOpenAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+appOpenAd.on('load', () => {
+  console.log('App open ad loaded and ready')
+})
+
+appOpenAd.on('loadfail', (event) => {
+  console.error('Failed to load app open ad', event.error)
+})
+
+appOpenAd.on('show', () => {
+  console.log('Showing app open ad')
+})
+
+appOpenAd.on('dismiss', () => {
+  console.log('User dismissed app open ad')
+  // Preload the next ad
+  appOpenAd.load()
+})
+
+await appOpenAd.load()
+```
+
+### Advanced: Managed Loading
+
+```typescript
+class AppOpenAdManager {
+  private ad: AppOpenAd
+  private isShowingAd = false
+  private loadTime = 0
+  private readonly MAX_AD_AGE = 4 * 60 * 60 * 1000 // 4 hours
+
+  constructor(adUnitId: string) {
+    this.ad = new AppOpenAd({ adUnitId })
+    this.setupListeners()
+  }
+
+  private setupListeners() {
+    this.ad.on('load', () => {
+      this.loadTime = Date.now()
+    })
+
+    this.ad.on('show', () => {
+      this.isShowingAd = true
+    })
+
+    this.ad.on('dismiss', () => {
+      this.isShowingAd = false
+      // Preload next ad
+      this.loadAd()
+    })
+  }
+
+  private isAdExpired(): boolean {
+    return Date.now() - this.loadTime > this.MAX_AD_AGE
+  }
+
+  async loadAd() {
+    if (!this.isShowingAd) {
+      await this.ad.load()
+    }
+  }
+
+  async showAdIfAvailable(): Promise<boolean> {
+    if (this.isShowingAd) {
+      return false
+    }
+
+    const isLoaded = await this.ad.isLoaded()
+    if (!isLoaded || this.isAdExpired()) {
+      await this.loadAd()
+      return false
+    }
+
+    return await this.ad.show()
+  }
+}
+
+// Usage
+const adManager = new AppOpenAdManager('ca-app-pub-xxx/yyy')
+
+document.addEventListener('deviceready', async () => {
+  await adManager.loadAd()
+})
+
+document.addEventListener('resume', async () => {
+  await adManager.showAdIfAvailable()
+})
+```
+
+### With Splash Screen
+
+```typescript
+const appOpenAd = new AppOpenAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+document.addEventListener('deviceready', async () => {
+  // Load ad while splash screen is showing
+  await appOpenAd.load()
+  
+  // Hide splash screen
+  navigator.splashscreen.hide()
+  
+  // Show app open ad
+  if (await appOpenAd.isLoaded()) {
+    await appOpenAd.show()
+  }
+})
+```

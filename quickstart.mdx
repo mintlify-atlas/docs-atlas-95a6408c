@@ -1,80 +1,796 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Display your first ad with AdMob Plus in minutes
 ---
 
-## Get started in three steps
+## Overview
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide walks you through displaying your first ad using AdMob Plus. We'll use a banner ad as an example, but the concepts apply to all ad types.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Make sure you've completed the [installation](/installation) steps before continuing.
 </Note>
+
+## Choose Your Framework
+
+Select your framework to see framework-specific examples:
+
+<Tabs>
+  <Tab title="Cordova">
+    ## Initialize the SDK
+
+    First, initialize the AdMob SDK when your app starts. This should be done once in your app's lifecycle.
+
+    ```javascript index.js
+    document.addEventListener('deviceready', onDeviceReady, false)
+
+    async function onDeviceReady() {
+      try {
+        // Start the AdMob SDK
+        const result = await admob.start()
+        console.log('AdMob SDK initialized:', result.version)
+
+        // Optional: Configure test devices
+        await admob.configure({
+          testDeviceIds: ['YOUR_TEST_DEVICE_ID']
+        })
+      } catch (error) {
+        console.error('Failed to initialize AdMob:', error)
+      }
+    }
+    ```
+
+    <Note>
+      Use test ad units during development. See [test ads documentation](https://developers.google.com/admob/android/test-ads) for test device IDs.
+    </Note>
+
+    ## Display a Banner Ad
+
+    Create and show a banner ad at the bottom of the screen:
+
+    ```javascript
+    async function showBannerAd() {
+      const banner = new admob.BannerAd({
+        adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Test ad unit
+        position: 'bottom'
+      })
+
+      // Listen for ad events
+      banner.on('load', (event) => {
+        console.log('Banner ad loaded:', event.ad.id)
+      })
+
+      banner.on('loadfail', (event) => {
+        console.error('Banner ad failed to load:', event)
+      })
+
+      // Load and show the banner
+      await banner.show()
+    }
+    ```
+
+    ## Display an Interstitial Ad
+
+    Load and show a full-screen interstitial ad:
+
+    ```javascript
+    async function showInterstitialAd() {
+      const interstitial = new admob.InterstitialAd({
+        adUnitId: 'ca-app-pub-3940256099942544/1033173712' // Test ad unit
+      })
+
+      // Listen for ad events
+      interstitial.on('load', () => {
+        console.log('Interstitial ad loaded')
+      })
+
+      interstitial.on('dismiss', () => {
+        console.log('Interstitial ad dismissed')
+      })
+
+      try {
+        // Load the ad first
+        await interstitial.load()
+        // Then show it
+        await interstitial.show()
+      } catch (error) {
+        console.error('Failed to show interstitial:', error)
+      }
+    }
+    ```
+
+    ## Display a Rewarded Ad
+
+    Show a rewarded ad and handle the reward:
+
+    ```javascript
+    async function showRewardedAd() {
+      const rewarded = new admob.RewardedAd({
+        adUnitId: 'ca-app-pub-3940256099942544/5224354917' // Test ad unit
+      })
+
+      // Handle the reward
+      rewarded.on('reward', (event) => {
+        console.log('User earned reward:', event.reward)
+        // Grant the reward to the user
+        grantReward(event.reward.amount, event.reward.type)
+      })
+
+      rewarded.on('dismiss', () => {
+        console.log('Rewarded ad dismissed')
+      })
+
+      try {
+        await rewarded.load()
+        await rewarded.show()
+      } catch (error) {
+        console.error('Failed to show rewarded ad:', error)
+      }
+    }
+
+    function grantReward(amount, type) {
+      console.log(`Granting ${amount} ${type} to user`)
+      // Your reward logic here
+    }
+    ```
+
+    ## TypeScript Example
+
+    For TypeScript projects, leverage the full type safety:
+
+    ```typescript
+    import type { BannerAd, InterstitialAd, RewardedAd } from 'admob-plus-cordova'
+
+    declare const admob: import('admob-plus-cordova').AdMob
+
+    async function showTypedBannerAd(): Promise<void> {
+      const banner: BannerAd = new admob.BannerAd({
+        adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+        position: 'bottom',
+      })
+
+      banner.on('load', (event) => {
+        console.log('Loaded:', event.ad.id)
+      })
+
+      await banner.show()
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Capacitor">
+    ## Initialize the SDK
+
+    Import and initialize AdMob Plus when your app starts:
+
+    ```typescript App.tsx
+    import { AdMobPlus } from '@admob-plus/capacitor'
+    import { useEffect } from 'react'
+
+    function App() {
+      useEffect(() => {
+        // Initialize AdMob SDK
+        AdMobPlus.start()
+          .then(() => console.log('AdMob initialized'))
+          .catch(err => console.error('AdMob init failed:', err))
+      }, [])
+
+      return (
+        // Your app content
+      )
+    }
+    ```
+
+    ## Display a Banner Ad
+
+    Create and show a banner ad:
+
+    ```typescript
+    import { BannerAd } from '@admob-plus/capacitor'
+
+    async function showBannerAd() {
+      const banner = new BannerAd({
+        adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Test ad unit
+        position: 'bottom'
+      })
+
+      try {
+        await banner.show()
+        console.log('Banner ad displayed')
+      } catch (error) {
+        console.error('Failed to show banner:', error)
+      }
+    }
+    ```
+
+    ## Display an Interstitial Ad
+
+    Load and show a full-screen interstitial:
+
+    ```typescript
+    import { InterstitialAd } from '@admob-plus/capacitor'
+
+    async function showInterstitialAd() {
+      const interstitial = new InterstitialAd({
+        adUnitId: 'ca-app-pub-3940256099942544/1033173712'
+      })
+
+      try {
+        // Check if already loaded
+        const isLoaded = await interstitial.isLoaded()
+        if (!isLoaded) {
+          await interstitial.load()
+        }
+        await interstitial.show()
+      } catch (error) {
+        console.error('Failed to show interstitial:', error)
+      }
+    }
+    ```
+
+    ## Display a Rewarded Ad
+
+    Show a rewarded ad with event listeners:
+
+    ```typescript
+    import { RewardedAd, AdMobPlus } from '@admob-plus/capacitor'
+
+    async function showRewardedAd() {
+      const rewarded = new RewardedAd({
+        adUnitId: 'ca-app-pub-3940256099942544/5224354917'
+      })
+
+      // Listen for reward event
+      const listener = await AdMobPlus.addListener('ad.reward', (event) => {
+        if (event.adId === rewarded.id) {
+          console.log('User earned reward:', event.reward)
+          // Grant reward to user
+          grantReward(event.reward)
+        }
+      })
+
+      try {
+        await rewarded.load()
+        await rewarded.show()
+      } catch (error) {
+        console.error('Failed to show rewarded ad:', error)
+      } finally {
+        // Clean up listener
+        listener.remove()
+      }
+    }
+
+    function grantReward(reward: { amount: number; type: string }) {
+      console.log(`Granting ${reward.amount} ${reward.type}`)
+      // Your reward logic
+    }
+    ```
+
+    ## React Component Example
+
+    A complete React component with banner ad:
+
+    ```tsx BannerAdComponent.tsx
+    import { BannerAd } from '@admob-plus/capacitor'
+    import { useEffect, useState } from 'react'
+
+    export function BannerAdComponent() {
+      const [banner, setBanner] = useState<BannerAd | null>(null)
+
+      useEffect(() => {
+        const ad = new BannerAd({
+          adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+          position: 'bottom'
+        })
+
+        ad.show()
+          .then(() => console.log('Banner shown'))
+          .catch(err => console.error('Banner error:', err))
+
+        setBanner(ad)
+
+        // Cleanup: hide banner when component unmounts
+        return () => {
+          ad.hide().catch(console.error)
+        }
+      }, [])
+
+      return (
+        <div>
+          {/* Your component content */}
+          {/* Banner will be shown at the bottom */}
+        </div>
+      )
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="React Native">
+    ## Initialize the SDK
+
+    Initialize AdMob when your app component mounts:
+
+    ```tsx App.tsx
+    import React, { useEffect } from 'react'
+    import AdMob from '@admob-plus/react-native'
+
+    export default function App() {
+      useEffect(() => {
+        // Initialize AdMob SDK
+        AdMob.start()
+          .then(() => console.log('AdMob initialized'))
+          .catch(err => console.error('AdMob failed to initialize:', err))
+      }, [])
+
+      return (
+        // Your app content
+      )
+    }
+    ```
+
+    ## Display an Interstitial Ad
+
+    Create and show a full-screen interstitial:
+
+    ```tsx
+    import { InterstitialAd } from '@admob-plus/react-native'
+    import { Button } from 'react-native'
+
+    function InterstitialButton() {
+      const showInterstitial = async () => {
+        try {
+          const ad = new InterstitialAd({
+            adUnitId: 'ca-app-pub-3940256099942544/4411468910'
+          })
+
+          // Listen for events
+          ad.on('load', (event) => {
+            console.log('Interstitial loaded:', event)
+          })
+
+          ad.on('dismiss', () => {
+            console.log('Interstitial dismissed')
+          })
+
+          // Load and show
+          await ad.load()
+          await ad.show()
+        } catch (err) {
+          console.error('Interstitial error:', err)
+        }
+      }
+
+      return <Button title="Show Interstitial" onPress={showInterstitial} />
+    }
+    ```
+
+    ## Display a Rewarded Ad
+
+    Show a rewarded ad and handle the reward:
+
+    ```tsx
+    import { RewardedAd, eventEmitter } from '@admob-plus/react-native'
+    import { Button, Alert } from 'react-native'
+
+    function RewardedButton() {
+      const showRewarded = async () => {
+        try {
+          const ad = new RewardedAd({
+            adUnitId: 'ca-app-pub-3940256099942544/5224354917'
+          })
+
+          // Listen for reward event
+          const subscription = eventEmitter.addListener('ad.reward', (event) => {
+            if (event.adId === ad.id) {
+              console.log('User earned reward:', event.reward)
+              Alert.alert(
+                'Reward Earned!',
+                `You earned ${event.reward.amount} ${event.reward.type}`
+              )
+              // Grant reward to user
+            }
+          })
+
+          ad.on('dismiss', () => {
+            console.log('Rewarded ad dismissed')
+            subscription.remove()
+          })
+
+          await ad.load()
+          await ad.show()
+        } catch (err) {
+          console.error('Rewarded ad error:', err)
+        }
+      }
+
+      return <Button title="Watch Ad for Reward" onPress={showRewarded} />
+    }
+    ```
+
+    ## Display a Rewarded Interstitial Ad
+
+    Show a rewarded interstitial ad:
+
+    ```tsx
+    import { RewardedInterstitialAd } from '@admob-plus/react-native'
+    import { Button } from 'react-native'
+
+    function RewardedInterstitialButton() {
+      const showRewardedInterstitial = async () => {
+        try {
+          const ad = new RewardedInterstitialAd({
+            adUnitId: 'ca-app-pub-3940256099942544/6978759866'
+          })
+
+          ad.on('reward', (event) => {
+            console.log('Reward earned:', event.reward)
+            // Grant reward
+          })
+
+          await ad.load()
+          await ad.show()
+        } catch (err) {
+          console.error('Rewarded interstitial error:', err)
+        }
+      }
+
+      return (
+        <Button 
+          title="Show Rewarded Interstitial" 
+          onPress={showRewardedInterstitial} 
+        />
+      )
+    }
+    ```
+
+    ## Complete Example
+
+    Here's a complete working example:
+
+    ```tsx App.tsx
+    import React, { useEffect } from 'react'
+    import AdMob, { InterstitialAd, RewardedAd } from '@admob-plus/react-native'
+    import { 
+      SafeAreaView, 
+      Button, 
+      StyleSheet, 
+      View,
+      Alert 
+    } from 'react-native'
+
+    export default function App() {
+      useEffect(() => {
+        AdMob.start().catch(console.error)
+      }, [])
+
+      const showInterstitial = async () => {
+        try {
+          const ad = new InterstitialAd({
+            adUnitId: 'ca-app-pub-3940256099942544/4411468910'
+          })
+          await ad.load()
+          await ad.show()
+        } catch (err) {
+          Alert.alert('Error', JSON.stringify(err))
+        }
+      }
+
+      const showRewarded = async () => {
+        try {
+          const ad = new RewardedAd({
+            adUnitId: 'ca-app-pub-3940256099942544/5224354917'
+          })
+          ad.on('reward', (event) => {
+            Alert.alert('Reward!', `Earned ${event.reward.amount}`)
+          })
+          await ad.load()
+          await ad.show()
+        } catch (err) {
+          Alert.alert('Error', JSON.stringify(err))
+        }
+      }
+
+      return (
+        <SafeAreaView style={styles.container}>
+          <View style={styles.buttonContainer}>
+            <Button title="Show Interstitial" onPress={showInterstitial} />
+            <Button title="Show Rewarded" onPress={showRewarded} />
+          </View>
+        </SafeAreaView>
+      )
+    }
+
+    const styles = StyleSheet.create({
+      container: {
+        flex: 1,
+        justifyContent: 'center',
+      },
+      buttonContainer: {
+        gap: 16,
+        padding: 16,
+      },
+    })
+    ```
+
+  </Tab>
+
+  <Tab title="Ionic">
+    ## Initialize the SDK (Cordova)
+
+    For Ionic apps using Cordova:
+
+    ```typescript app.component.ts
+    import { Component } from '@angular/core'
+    import { Platform } from '@ionic/angular'
+    import { BannerAd, InterstitialAd, RewardedAd } from 'admob-plus-cordova'
+
+    @Component({
+      selector: 'app-root',
+      templateUrl: 'app.component.html',
+    })
+    export class AppComponent {
+      constructor(private platform: Platform) {
+        this.initializeApp()
+      }
+
+      async initializeApp() {
+        await this.platform.ready()
+        
+        try {
+          await admob.start()
+          console.log('AdMob initialized')
+        } catch (error) {
+          console.error('AdMob initialization failed:', error)
+        }
+      }
+    }
+    ```
+
+    ## Display a Banner Ad
+
+    Show a banner in your Ionic page:
+
+    ```typescript home.page.ts
+    import { Component } from '@angular/core'
+    import { BannerAd } from 'admob-plus-cordova'
+
+    @Component({
+      selector: 'app-home',
+      templateUrl: 'home.page.html',
+    })
+    export class HomePage {
+      async showBannerAd() {
+        const banner = new BannerAd({
+          adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+          position: 'bottom'
+        })
+
+        try {
+          await banner.show()
+          console.log('Banner displayed')
+        } catch (error) {
+          console.error('Banner error:', error)
+        }
+      }
+    }
+    ```
+
+    ```html home.page.html
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>AdMob Plus Demo</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-button expand="block" (click)="showBannerAd()">
+        Show Banner Ad
+      </ion-button>
+    </ion-content>
+    ```
+
+    ## Display an Interstitial Ad
+
+    ```typescript
+    import { InterstitialAd } from 'admob-plus-cordova'
+
+    async showInterstitialAd() {
+      const interstitial = new InterstitialAd({
+        adUnitId: 'ca-app-pub-3940256099942544/1033173712'
+      })
+
+      interstitial.on('dismiss', () => {
+        console.log('Interstitial dismissed')
+      })
+
+      try {
+        await interstitial.load()
+        await interstitial.show()
+      } catch (error) {
+        console.error('Interstitial error:', error)
+      }
+    }
+    ```
+
+    ## Display a Rewarded Ad
+
+    ```typescript
+    import { RewardedAd } from 'admob-plus-cordova'
+
+    async showRewardedAd() {
+      const rewarded = new RewardedAd({
+        adUnitId: 'ca-app-pub-3940256099942544/5224354917'
+      })
+
+      rewarded.on('reward', (event) => {
+        console.log('Reward earned:', event.reward)
+        this.grantReward(event.reward.amount, event.reward.type)
+      })
+
+      try {
+        await rewarded.load()
+        await rewarded.show()
+      } catch (error) {
+        console.error('Rewarded ad error:', error)
+      }
+    }
+
+    grantReward(amount: number, type: string) {
+      console.log(`Granting ${amount} ${type} to user`)
+      // Your reward logic
+    }
+    ```
+
+    ## Initialize with Capacitor
+
+    For Ionic apps using Capacitor:
+
+    ```typescript app.component.ts
+    import { Component } from '@angular/core'
+    import { Platform } from '@ionic/angular'
+    import { AdMobPlus } from '@admob-plus/capacitor'
+
+    @Component({
+      selector: 'app-root',
+      templateUrl: 'app.component.html',
+    })
+    export class AppComponent {
+      constructor(private platform: Platform) {
+        this.initializeApp()
+      }
+
+      async initializeApp() {
+        await this.platform.ready()
+        
+        try {
+          await AdMobPlus.start()
+          console.log('AdMob initialized')
+        } catch (error) {
+          console.error('AdMob initialization failed:', error)
+        }
+      }
+    }
+    ```
+
+    Then use `@admob-plus/capacitor` APIs as shown in the Capacitor tab.
+
+  </Tab>
+</Tabs>
+
+## Test Ad Units
+
+During development, always use Google's test ad units to avoid policy violations:
+
+<CodeGroup>
+```text Android Test Units
+Banner: ca-app-pub-3940256099942544/6300978111
+Interstitial: ca-app-pub-3940256099942544/1033173712
+Rewarded: ca-app-pub-3940256099942544/5224354917
+Rewarded Interstitial: ca-app-pub-3940256099942544/6978759866
+App Open: ca-app-pub-3940256099942544/5662855259
+```
+
+```text iOS Test Units
+Banner: ca-app-pub-3940256099942544/2934735716
+Interstitial: ca-app-pub-3940256099942544/4411468910
+Rewarded: ca-app-pub-3940256099942544/1712485313
+Rewarded Interstitial: ca-app-pub-3940256099942544/6978759866
+App Open: ca-app-pub-3940256099942544/5662855259
+```
+</CodeGroup>
+
+<Warning>
+  Never click on your own live ads. This violates AdMob policies and can result in account suspension. Always use test ads during development.
+</Warning>
+
+## Common Patterns
+
+### Pre-loading Ads
+
+For better user experience, pre-load ads before showing them:
+
+```typescript
+const interstitial = new InterstitialAd({
+  adUnitId: 'your-ad-unit-id'
+})
+
+// Pre-load when app starts or at a natural break
+await interstitial.load()
+
+// Show immediately when needed (e.g., level complete)
+await interstitial.show()
+```
+
+### Error Handling
+
+Always handle errors gracefully:
+
+```typescript
+try {
+  await ad.load()
+  await ad.show()
+} catch (error) {
+  // Ad failed to load or show
+  console.error('Ad error:', error)
+  // Continue with app flow
+  proceedWithoutAd()
+}
+```
+
+### Event Listeners
+
+Listen to ad lifecycle events:
+
+```typescript
+ad.on('load', () => console.log('Ad loaded'))
+ad.on('loadfail', (err) => console.error('Ad load failed:', err))
+ad.on('show', () => console.log('Ad shown'))
+ad.on('showfail', (err) => console.error('Ad show failed:', err))
+ad.on('dismiss', () => console.log('Ad dismissed'))
+ad.on('impression', () => console.log('Ad impression recorded'))
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Initialize Early">
+    Call `start()` as early as possible in your app lifecycle to reduce ad loading times.
+  </Step>
+
+  <Step title="Pre-load Ads">
+    Load ads before you need to show them. This ensures ads are ready when users reach natural transition points.
+  </Step>
+
+  <Step title="Use Test Ads">
+    Always use test ad units during development. Switch to your real ad units only for production builds.
+  </Step>
+
+  <Step title="Handle Failures">
+    Ad loading can fail due to network issues or inventory. Always handle errors and continue your app flow.
+  </Step>
+
+  <Step title="Respect User Experience">
+    Don't show ads too frequently. Follow [AdMob policies](https://support.google.com/admob/answer/6128543) and show ads at natural breaks.
+  </Step>
+</Steps>
+
+## Next Steps
+
+Now that you've shown your first ad, explore more features:
+
+<CardGroup cols={2}>
+  <Card title="Banner Ads" icon="rectangle-ad" href="/ads/banner">
+    Learn about banner ad positioning and sizing
+  </Card>
+  <Card title="Interstitial Ads" icon="window-maximize" href="/ads/interstitial">
+    Implement full-screen interstitial ads
+  </Card>
+  <Card title="Rewarded Ads" icon="gift" href="/ads/rewarded">
+    Add rewarded video ads with incentives
+  </Card>
+  <Card title="API Reference" icon="code" href="/api">
+    Explore the complete API documentation
+  </Card>
+</CardGroup>

@@ -1,0 +1,368 @@
+---
+title: Banner Ad
+sidebar_label: Banner
+---
+
+Banner ads are rectangular image or text ads that occupy a spot within an app's layout. They stay on screen while users are interacting with the app, and can refresh automatically after a certain period of time.
+
+## Creating a Banner Ad
+
+<Steps>
+  <Step title="Import AdMob Plus">
+    Make sure AdMob Plus is initialized in your app.
+  </Step>
+  
+  <Step title="Create Banner Instance">
+    Create a new `BannerAd` instance with your ad unit ID.
+    
+    ```javascript
+    const banner = new admob.BannerAd({
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111' // Test ad unit
+    })
+    ```
+  </Step>
+  
+  <Step title="Show the Banner">
+    Call `show()` to display the banner. This will automatically load and show the ad.
+    
+    ```javascript
+    await banner.show()
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+### Constructor Options
+
+<ParamField path="adUnitId" type="string" required>
+  Your AdMob ad unit ID for banner ads.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Optional unique identifier for this ad instance. Defaults to `adUnitId` if not provided.
+</ParamField>
+
+<ParamField path="position" type="'top' | 'bottom'" default="'bottom'">
+  Position of the banner on screen.
+  
+  ```javascript
+  new admob.BannerAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    position: 'top' // Display at top of screen
+  })
+  ```
+</ParamField>
+
+<ParamField path="size" type="AdSizeType | Object">
+  Banner size configuration. Can be a predefined size type or custom dimensions.
+  
+  **Predefined Sizes:**
+  - `AdSizeType.BANNER` (320x50)
+  - `AdSizeType.LARGE_BANNER` (320x100)
+  - `AdSizeType.MEDIUM_RECTANGLE` (300x250)
+  - `AdSizeType.FULL_BANNER` (468x60)
+  - `AdSizeType.LEADERBOARD` (728x90)
+  - `AdSizeType.SMART_BANNER` (screen width adaptive, default)
+  
+  **Custom Size:**
+  ```javascript
+  size: { width: 320, height: 50 }
+  ```
+  
+  **Adaptive Anchored:**
+  ```javascript
+  size: {
+    adaptive: 'anchored',
+    orientation: 'portrait', // or 'landscape'
+    width: 320 // optional
+  }
+  ```
+  
+  **Adaptive Inline:**
+  ```javascript
+  size: {
+    adaptive: 'inline',
+    maxHeight: 200,
+    width: 320 // optional
+  }
+  ```
+</ParamField>
+
+<ParamField path="offset" type="number">
+  Offset in pixels from the position edge. Setting this makes the banner overlay on the webview.
+  
+  ```javascript
+  new admob.BannerAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    position: 'top',
+    offset: 100 // 100px from top
+  })
+  ```
+  
+  Set to `0` to overlay directly on content without spacing:
+  ```javascript
+  offset: 0
+  ```
+</ParamField>
+
+<ParamField path="contentUrl" type="string">
+  URL string for content that is being displayed in your app.
+</ParamField>
+
+<ParamField path="keywords" type="string[]">
+  Array of keyword strings for ad targeting.
+</ParamField>
+
+<ParamField path="npa" type="'1'">
+  Set to `'1'` to enable non-personalized ads (for GDPR compliance).
+</ParamField>
+
+### Methods
+
+#### `show()`
+
+Displays the banner ad. Automatically loads the ad if not already loaded.
+
+```javascript
+await banner.show()
+```
+
+**Returns:** `Promise<void>`
+
+#### `hide()`
+
+Hides the banner ad from view without destroying it.
+
+```javascript
+await banner.hide()
+```
+
+**Returns:** `Promise<void>`
+
+#### `load()`
+
+Preloads the banner ad. Usually not needed as `show()` automatically loads.
+
+```javascript
+await banner.load()
+```
+
+**Returns:** `Promise<void>`
+
+#### `on(eventName, callback)`
+
+Registers an event listener for the ad.
+
+```javascript
+const unsubscribe = banner.on('load', (evt) => {
+  console.log('Banner loaded:', evt.ad)
+})
+
+// Later: remove listener
+unsubscribe()
+```
+
+**Returns:** `Function` - Unsubscribe function
+
+### Static Methods
+
+#### `BannerAd.config(options)`
+
+Configures global banner settings (iOS only).
+
+<ParamField path="backgroundColor" type="string">
+  Background color for banner area. Accepts any CSS color value.
+  
+  ```javascript
+  admob.BannerAd.config({ backgroundColor: 'black' })
+  ```
+</ParamField>
+
+<ParamField path="marginTop" type="number">
+  Top margin in pixels.
+  
+  ```javascript
+  admob.BannerAd.config({ marginTop: 88 })
+  ```
+</ParamField>
+
+<ParamField path="marginBottom" type="number">
+  Bottom margin in pixels.
+  
+  ```javascript
+  admob.BannerAd.config({ marginBottom: 34 })
+  ```
+</ParamField>
+
+## Events
+
+All events can be listened to using the `on()` method or via global event listeners.
+
+### `load`
+
+Fired when the ad is successfully loaded and ready for display.
+
+```javascript
+banner.on('load', (evt) => {
+  console.log('Ad loaded:', evt.ad.id)
+})
+```
+
+### `loadfail`
+
+Fired when the ad request fails.
+
+```javascript
+banner.on('loadfail', (evt) => {
+  console.error('Load failed:', evt.error)
+})
+```
+
+### `impression`
+
+Fired when the ad is displayed to the user.
+
+```javascript
+banner.on('impression', (evt) => {
+  console.log('Ad impression recorded')
+})
+```
+
+### `click`
+
+Fired when the user clicks on the ad.
+
+```javascript
+banner.on('click', (evt) => {
+  console.log('Ad clicked')
+})
+```
+
+### `admob.banner.size`
+
+Global event that provides banner size information, including when the device is rotated.
+
+```javascript
+document.addEventListener('admob.banner.size', (event) => {
+  console.log('Banner size:', event.size)
+  /*
+  {
+    adId: number,
+    size: {
+      width: number,
+      height: number,
+      widthInPixels: number,
+      heightInPixels: number
+    }
+  }
+  */
+})
+```
+
+## Usage Examples
+
+### Basic Banner
+
+```javascript
+document.addEventListener('deviceready', async () => {
+  const banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  await banner.show()
+}, false)
+```
+
+### Banner with Event Handling
+
+```javascript
+let banner
+
+document.addEventListener('deviceready', async () => {
+  banner = new admob.BannerAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    position: 'top'
+  })
+  
+  banner.on('load', () => {
+    console.log('Banner loaded successfully')
+  })
+  
+  banner.on('impression', async () => {
+    console.log('Banner shown to user')
+    // Optionally hide after impression
+    // await banner.hide()
+  })
+  
+  banner.on('loadfail', (evt) => {
+    console.error('Failed to load banner:', evt.error)
+  })
+  
+  await banner.show()
+}, false)
+```
+
+### Banner with Custom Size
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  size: admob.AdSizeType.MEDIUM_RECTANGLE, // 300x250
+  position: 'bottom'
+})
+
+await banner.show()
+```
+
+### Adaptive Banner
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  size: {
+    adaptive: 'anchored',
+    orientation: 'portrait'
+  }
+})
+
+await banner.show()
+```
+
+### Show/Hide Toggle
+
+```javascript
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+// Show banner
+await banner.show()
+
+// Later: hide banner
+await banner.hide()
+
+// Show again (no need to reload)
+await banner.show()
+```
+
+<Note>
+  Banner ads automatically refresh at Google's optimized rate. You can customize the refresh rate in your [AdMob account settings](https://support.google.com/admob/answer/3245199).
+</Note>
+
+<Warning>
+  Make sure to handle banner positioning carefully to avoid obscuring important UI elements in your app.
+</Warning>
+
+## Best Practices
+
+1. **Positioning:** Place banners at natural breaks in content, not overlapping important UI elements
+2. **Refresh Rate:** Use Google's automatic refresh for optimal performance
+3. **Responsive Design:** Use adaptive sizes for better rendering across different devices
+4. **Performance:** Reuse banner instances instead of creating new ones frequently
+
+## References
+
+- [Banner Ads - AdMob Android Documentation](https://developers.google.com/admob/android/banner)
+- [Banner Ads - AdMob iOS Documentation](https://developers.google.com/admob/ios/banner)
+- [Banner Ad Guidance - AdMob Help](https://support.google.com/admob/answer/6128738)

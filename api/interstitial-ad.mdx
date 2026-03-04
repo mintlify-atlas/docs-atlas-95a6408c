@@ -1,0 +1,200 @@
+---
+title: InterstitialAd
+description: API reference for the InterstitialAd class
+---
+
+<RequestExample>
+```typescript
+import { InterstitialAd } from 'admob-plus-cordova'
+
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await interstitial.load()
+await interstitial.show()
+```
+</RequestExample>
+
+InterstitialAd displays full-screen ads that cover the interface of the app. They are typically displayed at natural transition points, such as between game levels or after completing a task.
+
+## Constructor
+
+<ParamField path="options" type="MobileAdOptions" required>
+  Configuration options for the interstitial ad
+  
+  <Expandable title="properties">
+    <ParamField path="adUnitId" type="string" required>
+      Your AdMob ad unit ID
+    </ParamField>
+    
+    <ParamField path="id" type="string">
+      Custom identifier for the ad instance. Defaults to `adUnitId`
+    </ParamField>
+    
+    <ParamField path="contentUrl" type="string">
+      Content URL for targeting purposes
+    </ParamField>
+    
+    <ParamField path="keywords" type="string[]">
+      Keywords for ad targeting
+    </ParamField>
+    
+    <ParamField path="npa" type="'1'">
+      Set to '1' to enable non-personalized ads (for GDPR compliance)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Methods
+
+### load()
+
+Loads the interstitial ad. Must be called before showing the ad.
+
+```typescript
+await interstitial.load()
+```
+
+**Returns:** `Promise<void>`
+
+### show()
+
+Displays the interstitial ad. The ad must be loaded first.
+
+```typescript
+if (await interstitial.isLoaded()) {
+  await interstitial.show()
+}
+```
+
+**Returns:** `Promise<void>`
+
+### isLoaded()
+
+Checks if the interstitial ad is loaded and ready to show.
+
+```typescript
+const loaded = await interstitial.isLoaded()
+if (loaded) {
+  await interstitial.show()
+}
+```
+
+**Returns:** `Promise<boolean>` - True if the ad is loaded, false otherwise
+
+### on()
+
+Registers an event listener for ad events.
+
+```typescript
+const unsubscribe = interstitial.on('load', (event) => {
+  console.log('Interstitial loaded', event)
+})
+
+// Later, to remove the listener:
+unsubscribe()
+```
+
+<ParamField path="eventName" type="string" required>
+  Name of the event to listen for
+</ParamField>
+
+<ParamField path="callback" type="function" required>
+  Function to call when the event occurs
+</ParamField>
+
+**Returns:** `() => void` - Function to remove the event listener
+
+## Properties
+
+<ResponseField name="id" type="string">
+  The unique identifier for this ad instance
+</ResponseField>
+
+<ResponseField name="adUnitId" type="string">
+  The AdMob ad unit ID
+</ResponseField>
+
+## Examples
+
+### Basic Usage
+
+```typescript
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await interstitial.load()
+await interstitial.show()
+```
+
+### With Event Listeners
+
+```typescript
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+interstitial.on('load', () => {
+  console.log('Interstitial loaded and ready to show')
+})
+
+interstitial.on('dismiss', () => {
+  console.log('User dismissed the interstitial')
+  // Load the next ad
+  interstitial.load()
+})
+
+interstitial.on('show', () => {
+  console.log('Interstitial is now showing')
+})
+
+interstitial.on('showfail', (event) => {
+  console.error('Failed to show interstitial', event.error)
+})
+
+await interstitial.load()
+```
+
+### Check Before Showing
+
+```typescript
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await interstitial.load()
+
+// Later, at a natural transition point
+if (await interstitial.isLoaded()) {
+  await interstitial.show()
+} else {
+  console.log('Ad not ready yet')
+}
+```
+
+### With Targeting
+
+```typescript
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  keywords: ['game', 'puzzle'],
+  contentUrl: 'https://example.com/game'
+})
+
+await interstitial.load()
+await interstitial.show()
+```
+
+### Non-Personalized Ads (GDPR)
+
+```typescript
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  npa: '1' // Request non-personalized ads
+})
+
+await interstitial.load()
+await interstitial.show()
+```

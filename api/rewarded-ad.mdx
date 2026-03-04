@@ -1,0 +1,273 @@
+---
+title: RewardedAd
+description: API reference for the RewardedAd class
+---
+
+<RequestExample>
+```typescript
+import { RewardedAd } from 'admob-plus-cordova'
+
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await rewarded.load()
+await rewarded.show()
+```
+</RequestExample>
+
+RewardedAd displays full-screen ads that reward users for watching video ads. Users can earn in-app rewards like coins, extra lives, or power-ups.
+
+## Constructor
+
+<ParamField path="options" type="RewardedAdOptions" required>
+  Configuration options for the rewarded ad
+  
+  <Expandable title="properties">
+    <ParamField path="adUnitId" type="string" required>
+      Your AdMob ad unit ID
+    </ParamField>
+    
+    <ParamField path="serverSideVerification" type="ServerSideVerificationOptions">
+      Server-side verification options for reward validation
+      
+      <Expandable title="properties">
+        <ParamField path="customData" type="string">
+          Custom data to pass to your server for verification
+        </ParamField>
+        
+        <ParamField path="userId" type="string">
+          User ID to pass to your server for verification
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField path="id" type="string">
+      Custom identifier for the ad instance. Defaults to `adUnitId`
+    </ParamField>
+    
+    <ParamField path="contentUrl" type="string">
+      Content URL for targeting purposes
+    </ParamField>
+    
+    <ParamField path="keywords" type="string[]">
+      Keywords for ad targeting
+    </ParamField>
+    
+    <ParamField path="npa" type="'1'">
+      Set to '1' to enable non-personalized ads (for GDPR compliance)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Methods
+
+### load()
+
+Loads the rewarded ad. Must be called before showing the ad.
+
+```typescript
+await rewarded.load()
+```
+
+**Returns:** `Promise<void>`
+
+### show()
+
+Displays the rewarded ad. The ad must be loaded first.
+
+```typescript
+if (await rewarded.isLoaded()) {
+  await rewarded.show()
+}
+```
+
+**Returns:** `Promise<void>`
+
+### isLoaded()
+
+Checks if the rewarded ad is loaded and ready to show.
+
+```typescript
+const loaded = await rewarded.isLoaded()
+if (loaded) {
+  await rewarded.show()
+}
+```
+
+**Returns:** `Promise<boolean>` - True if the ad is loaded, false otherwise
+
+### on()
+
+Registers an event listener for ad events.
+
+```typescript
+const unsubscribe = rewarded.on('reward', (event) => {
+  console.log('User earned reward:', event.reward)
+})
+
+// Later, to remove the listener:
+unsubscribe()
+```
+
+<ParamField path="eventName" type="string" required>
+  Name of the event to listen for. Common events:
+  - `load` - Ad has loaded
+  - `loadfail` - Ad failed to load
+  - `show` - Ad is showing
+  - `showfail` - Ad failed to show
+  - `dismiss` - User dismissed the ad
+  - `reward` - User earned a reward
+  - `impression` - Ad impression recorded
+</ParamField>
+
+<ParamField path="callback" type="function" required>
+  Function to call when the event occurs
+</ParamField>
+
+**Returns:** `() => void` - Function to remove the event listener
+
+## Properties
+
+<ResponseField name="id" type="string">
+  The unique identifier for this ad instance
+</ResponseField>
+
+<ResponseField name="adUnitId" type="string">
+  The AdMob ad unit ID
+</ResponseField>
+
+## Examples
+
+### Basic Usage
+
+```typescript
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+await rewarded.load()
+await rewarded.show()
+```
+
+### With Reward Handling
+
+```typescript
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+rewarded.on('reward', (event) => {
+  const { reward } = event
+  console.log(`User earned ${reward.amount} ${reward.type}`)
+  // Grant the user their reward
+  grantCoins(reward.amount)
+})
+
+rewarded.on('dismiss', () => {
+  console.log('User dismissed the ad')
+  // Load the next ad
+  rewarded.load()
+})
+
+await rewarded.load()
+await rewarded.show()
+```
+
+### With Server-Side Verification
+
+```typescript
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  serverSideVerification: {
+    userId: 'user123',
+    customData: 'level5_reward'
+  }
+})
+
+rewarded.on('reward', (event) => {
+  // Your server will receive a callback from Google
+  // to verify this reward before you grant it
+  console.log('Reward event received, awaiting server verification')
+})
+
+await rewarded.load()
+await rewarded.show()
+```
+
+### Complete Flow with Error Handling
+
+```typescript
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+rewarded.on('load', () => {
+  console.log('Rewarded ad loaded')
+})
+
+rewarded.on('loadfail', (event) => {
+  console.error('Failed to load rewarded ad', event.error)
+})
+
+rewarded.on('show', () => {
+  console.log('Rewarded ad is showing')
+})
+
+rewarded.on('showfail', (event) => {
+  console.error('Failed to show rewarded ad', event.error)
+})
+
+rewarded.on('reward', (event) => {
+  const { reward } = event
+  console.log(`Rewarding user: ${reward.amount} ${reward.type}`)
+  grantReward(reward)
+})
+
+rewarded.on('dismiss', () => {
+  console.log('User closed the ad')
+  rewarded.load() // Preload the next ad
+})
+
+try {
+  await rewarded.load()
+  
+  // Show ad when user clicks "Watch Ad" button
+  if (await rewarded.isLoaded()) {
+    await rewarded.show()
+  }
+} catch (error) {
+  console.error('Error with rewarded ad:', error)
+}
+```
+
+### Preload Strategy
+
+```typescript
+const rewarded = new RewardedAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+// Preload on app start
+await rewarded.load()
+
+// Later, when user wants to watch
+function showRewardedAd() {
+  rewarded.on('dismiss', async () => {
+    // Immediately load the next ad after dismissal
+    await rewarded.load()
+  })
+  
+  rewarded.on('reward', (event) => {
+    grantReward(event.reward)
+  })
+  
+  if (await rewarded.isLoaded()) {
+    await rewarded.show()
+  } else {
+    console.log('Ad not ready, loading now...')
+    await rewarded.load()
+    await rewarded.show()
+  }
+}
+```

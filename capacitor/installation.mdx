@@ -1,0 +1,149 @@
+---
+title: Capacitor Installation
+description: Install AdMob Plus in your Capacitor project
+---
+
+Install the AdMob Plus Capacitor plugin and configure it for Android and iOS.
+
+## Prerequisites
+
+<Check>
+  Capacitor project initialized
+</Check>
+<Check>
+  AdMob account with app registered
+</Check>
+
+## Installation
+
+<Steps>
+  <Step title="Install the Package">
+    Install using your package manager:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/capacitor
+    ```
+    ```bash yarn
+    yarn add @admob-plus/capacitor
+    ```
+    ```bash pnpm
+    pnpm add @admob-plus/capacitor
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Sync Native Projects">
+    Sync the plugin with your native projects:
+
+    ```bash
+    npx cap sync
+    ```
+  </Step>
+
+  <Step title="Configure Android">
+    Add your AdMob App ID to `android/app/src/main/AndroidManifest.xml`:
+
+    ```xml title="AndroidManifest.xml"
+    <manifest>
+      <application>
+        <meta-data
+          android:name="com.google.android.gms.ads.APPLICATION_ID"
+          android:value="ca-app-pub-xxx~xxx" />
+      </application>
+    </manifest>
+    ```
+
+    <Note>
+      Replace `ca-app-pub-xxx~xxx` with your actual Android AdMob App ID.
+    </Note>
+  </Step>
+
+  <Step title="Configure iOS">
+    Add your AdMob App ID to `ios/App/App/Info.plist`:
+
+    ```xml title="Info.plist"
+    <key>GADApplicationIdentifier</key>
+    <string>ca-app-pub-xxx~xxx</string>
+    ```
+
+    <Note>
+      Replace `ca-app-pub-xxx~xxx` with your actual iOS AdMob App ID.
+    </Note>
+
+    Then run:
+
+    ```bash
+    npx cap sync ios
+    ```
+  </Step>
+</Steps>
+
+## Platform-Specific Setup
+
+### Android Requirements
+
+- **Minimum SDK:** 21 (Android 5.0)
+- **Target SDK:** 33+
+- **Google Play Services:** Automatically included
+
+### iOS Requirements
+
+- **iOS Version:** 12.0+
+- **CocoaPods:** Automatically managed by Capacitor
+
+<Tip>
+  The plugin automatically includes the Google Mobile Ads SDK via CocoaPods.
+</Tip>
+
+## App Tracking Transparency (iOS)
+
+For iOS 14+, add the tracking usage description to `Info.plist`:
+
+```xml title="Info.plist"
+<key>NSUserTrackingUsageDescription</key>
+<string>This app uses your data for personalized advertising.</string>
+```
+
+Request tracking authorization in your app:
+
+```typescript
+import { AdMobPlus } from '@admob-plus/capacitor';
+
+const { status } = await AdMobPlus.requestTrackingAuthorization();
+console.log('Tracking status:', status);
+```
+
+## Verification
+
+Verify the installation by checking the installed Capacitor plugins:
+
+```bash
+npx cap ls
+```
+
+You should see `@admob-plus/capacitor` in the list.
+
+## Troubleshooting
+
+<Accordion title="Build fails on Android">
+  1. Ensure your `build.gradle` uses the correct Google Play Services version
+  2. Run `npx cap sync android` to refresh dependencies
+  3. Clean and rebuild: `cd android && ./gradlew clean && cd ..`
+</Accordion>
+
+<Accordion title="Build fails on iOS">
+  1. Update CocoaPods: `cd ios/App && pod install && cd ../..`
+  2. If still failing, try: `cd ios/App && pod deintegrate && pod install && cd ../..`
+  3. Run `npx cap sync ios`
+</Accordion>
+
+<Accordion title="Plugin not found at runtime">
+  Ensure you've run `npx cap sync` after installing the package.
+</Accordion>
+
+## Next Steps
+
+<Card title="Usage Guide" icon="code" href="/capacitor/usage">
+  Learn how to display ads in your Capacitor app
+</Card>

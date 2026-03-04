@@ -1,0 +1,180 @@
+---
+title: Ionic Installation
+description: Install AdMob Plus in your Ionic project
+---
+
+Install the AdMob Plus Ionic Native wrapper in your Ionic Framework project.
+
+## Prerequisites
+
+<Check>
+  Ionic project initialized
+</Check>
+<Check>
+  Ionic Native Core installed
+</Check>
+<Check>
+  AdMob account with app registered
+</Check>
+
+## Installation
+
+Ionic projects can use either Cordova or Capacitor as the native runtime. Choose the appropriate installation method:
+
+<Tabs>
+  <Tab title="Ionic with Cordova">
+
+<Steps>
+  <Step title="Install the Packages">
+    Install both the Ionic Native wrapper and the Cordova plugin:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/ionic admob-plus-cordova @ionic-native/core
+    ```
+    ```bash yarn
+    yarn add @admob-plus/ionic admob-plus-cordova @ionic-native/core
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Configure App IDs">
+    Set your AdMob App IDs in `config.xml`:
+
+    ```xml title="config.xml"
+    <preference name="ADMOB_APP_ID_ANDROID" value="ca-app-pub-xxx~xxx" />
+    <preference name="ADMOB_APP_ID_IOS" value="ca-app-pub-xxx~xxx" />
+    ```
+  </Step>
+
+  <Step title="Add to Module">
+    Import in your Angular module:
+
+    ```typescript title="app.module.ts"
+    import { NgModule } from '@angular/core';
+    import { AdMob } from '@admob-plus/ionic/ngx';
+
+    @NgModule({
+      providers: [
+        AdMob,
+      ],
+    })
+    export class AppModule {}
+    ```
+  </Step>
+
+  <Step title="Build the Project">
+    ```bash
+    ionic cordova build android
+    ionic cordova build ios
+    ```
+  </Step>
+</Steps>
+
+  </Tab>
+  <Tab title="Ionic with Capacitor">
+
+<Steps>
+  <Step title="Install the Packages">
+    Install the Ionic Native wrapper and underlying Cordova plugin:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @admob-plus/ionic admob-plus-cordova @ionic-native/core
+    ```
+    ```bash yarn
+    yarn add @admob-plus/ionic admob-plus-cordova @ionic-native/core
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Sync with Capacitor">
+    ```bash
+    npx cap sync
+    ```
+  </Step>
+
+  <Step title="Configure App IDs">
+    **For Android**, edit `android/app/src/main/AndroidManifest.xml`:
+
+    ```xml title="AndroidManifest.xml"
+    <meta-data
+      android:name="com.google.android.gms.ads.APPLICATION_ID"
+      android:value="ca-app-pub-xxx~xxx" />
+    ```
+
+    **For iOS**, edit `ios/App/App/Info.plist`:
+
+    ```xml title="Info.plist"
+    <key>GADApplicationIdentifier</key>
+    <string>ca-app-pub-xxx~xxx</string>
+    ```
+  </Step>
+
+  <Step title="Add to Module">
+    Import in your Angular module:
+
+    ```typescript title="app.module.ts"
+    import { NgModule } from '@angular/core';
+    import { AdMob } from '@admob-plus/ionic/ngx';
+
+    @NgModule({
+      providers: [
+        AdMob,
+      ],
+    })
+    export class AppModule {}
+    ```
+  </Step>
+
+  <Step title="Build the Project">
+    ```bash
+    ionic build
+    npx cap copy
+    ```
+  </Step>
+</Steps>
+
+  </Tab>
+</Tabs>
+
+## Verification
+
+Verify the installation:
+
+**Cordova:**
+```bash
+ionic cordova plugin list
+```
+
+**Capacitor:**
+```bash
+npx cap ls
+```
+
+You should see `admob-plus-cordova` in the list.
+
+## Troubleshooting
+
+<Accordion title="Module not found in Angular">
+  Ensure you've added `AdMob` to the `providers` array in your module and imported from `@admob-plus/ionic/ngx`.
+</Accordion>
+
+<Accordion title="Cordova plugin not found">
+  1. Ensure `admob-plus-cordova` is installed
+  2. For Cordova: Run `ionic cordova platform rm android && ionic cordova platform add android`
+  3. For Capacitor: Run `npx cap sync`
+</Accordion>
+
+<Accordion title="Build fails">
+  1. Clean the project: `ionic build --clean`
+  2. Remove and reinstall node modules
+  3. For Cordova: Remove and re-add platforms
+  4. For Capacitor: Run `npx cap sync` again
+</Accordion>
+
+## Next Steps
+
+<Card title="Usage Guide" icon="code" href="/ionic/usage">
+  Learn how to display ads in your Ionic app
+</Card>

@@ -1,122 +1,114 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "AdMob Plus",
+  "theme": "palm",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#4285F4",
+    "light": "#669DF6",
+    "dark": "#1967D2"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/admob-plus/admob-plus"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/admob-plus/admob-plus"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Frameworks",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "cordova/overview",
+              "cordova/installation",
+              "cordova/usage",
+              "capacitor/overview",
+              "capacitor/installation",
+              "capacitor/usage",
+              "react-native/overview",
+              "react-native/installation",
+              "react-native/usage",
+              "ionic/overview",
+              "ionic/installation",
+              "ionic/usage"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Ad Formats",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "ad-formats/banner",
+              "ad-formats/interstitial",
+              "ad-formats/rewarded",
+              "ad-formats/rewarded-interstitial",
+              "ad-formats/app-open",
+              "ad-formats/native"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Guides",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/configuration",
+              "guides/consent",
+              "guides/test-ads",
+              "guides/events",
+              "guides/targeting"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/overview",
+              "cli/commands"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core",
             "pages": [
-              "api-reference/introduction"
+              "api/admob",
+              "api/mobile-ad"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Ad Classes",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/banner-ad",
+              "api/interstitial-ad",
+              "api/rewarded-ad",
+              "api/rewarded-interstitial-ad",
+              "api/app-open-ad",
+              "api/native-ad"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "api/admob-config",
+              "api/request-config",
+              "api/events"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

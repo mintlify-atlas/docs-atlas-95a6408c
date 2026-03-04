@@ -1,0 +1,140 @@
+---
+title: Introduction
+description: Overview of AdMob Plus - a trustable cross-platform AdMob plugin for mobile applications
+---
+
+## What is AdMob Plus?
+
+AdMob Plus is a modern, open-source mobile advertising solution that provides clean APIs for integrating Google AdMob into your Cordova, Capacitor, React Native, and Ionic applications. It is the successor of [cordova-plugin-admob-free](https://github.com/ratson/cordova-plugin-admob-free), rebuilt with modern tools and a cleaner architecture.
+
+<Note>
+  AdMob Plus is third-party software, not a product of Google Inc. It utilizes Google AdMob SDKs to provide support for cross-platform applications.
+</Note>
+
+## Key Features
+
+AdMob Plus stands out from other AdMob solutions with several critical advantages:
+
+<CardGroup cols={2}>
+  <Card title="No Ad-Sharing" icon="shield-check">
+    100% of your ad revenue goes to you. No forced ad-sharing or revenue splitting.
+  </Card>
+  <Card title="Fully Open Source" icon="code">
+    Complete transparency with no binary blobs or closed-source components. Inspect every line of code.
+  </Card>
+  <Card title="No Remote Control" icon="lock">
+    Your app is completely under your control. No remote code execution or external interference.
+  </Card>
+  <Card title="Well Maintained" icon="wrench">
+    Active development and community support with regular updates and improvements.
+  </Card>
+</CardGroup>
+
+## Supported Ad Types
+
+AdMob Plus supports all major Google AdMob ad formats:
+
+- **App Open Ads** - Full-screen ads that appear when users open your app
+- **Banner Ads** - Rectangular ads anchored to the top or bottom of the screen
+- **Interstitial Ads** - Full-screen ads that cover the interface at natural transition points
+- **Rewarded Ads** - Full-screen ads that reward users for watching
+- **Rewarded Interstitial Ads** - Full-screen ads shown at natural transition points with rewards
+- **Native Ads** - Customizable ads that match your app's look and feel
+- **WebView Ads** - AdSense ads displayed in WebView components
+
+## Supported Frameworks
+
+AdMob Plus provides native integration for all major mobile development frameworks:
+
+<Tabs>
+  <Tab title="Cordova">
+    ```bash
+    cordova plugin add admob-plus-cordova
+    ```
+    Package: `admob-plus-cordova`
+  </Tab>
+  <Tab title="Capacitor">
+    ```bash
+    npm install @admob-plus/capacitor
+    ```
+    Package: `@admob-plus/capacitor`
+  </Tab>
+  <Tab title="React Native">
+    ```bash
+    npm install @admob-plus/react-native
+    ```
+    Package: `@admob-plus/react-native`
+  </Tab>
+  <Tab title="Ionic">
+    ```bash
+    npm install @admob-plus/ionic
+    ```
+    Package: `@admob-plus/ionic` (wrapper for Cordova)
+  </Tab>
+</Tabs>
+
+## Why Choose AdMob Plus?
+
+### Complete Transparency
+
+Many competing AdMob plugins include closed-source binary files or hidden ad-sharing mechanisms. AdMob Plus is 100% open source - you can review every line of code on [GitHub](https://github.com/admob-plus/admob-plus).
+
+### No Hidden Costs
+
+Unlike other solutions that take a percentage of your ad revenue or inject their own ads, AdMob Plus ensures all revenue goes directly to you.
+
+### Modern TypeScript API
+
+Built from the ground up with TypeScript, AdMob Plus provides:
+
+- Full type safety and autocompletion
+- Promise-based async APIs
+- Clean, intuitive method names
+- Comprehensive type definitions
+
+```typescript
+import { InterstitialAd } from 'admob-plus-cordova'
+
+const interstitial = new InterstitialAd({
+  adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+})
+
+await interstitial.load()
+await interstitial.show()
+```
+
+### Active Community
+
+With regular updates, active issue tracking, and comprehensive documentation, AdMob Plus is maintained by developers who care about the ecosystem.
+
+## Comparison with Other Solutions
+
+| Project | No Ad-Sharing | Fully Open Source | No Remote Control |
+|---------|---------------|-------------------|-------------------|
+| **admob-plus-cordova** | ✅ | ✅ | ✅ |
+| cordova-admob | ❌ | ✅ | ✅ |
+| cordova-plugin-ad-admob | ❌ | ✅ | ✅ |
+| cordova-plugin-admob-simple | ❌ | ✅ | ❌ |
+| cordova-plugin-admobpro | ❌ | ❌ | ❌ |
+| cordova-plugin-ads | ❌ | ✅ | ✅ |
+
+<Warning>
+  Some plugins include hidden revenue sharing, binary blobs, or remote control capabilities. Always verify what you're installing.
+</Warning>
+
+## Getting Started
+
+Ready to integrate AdMob Plus into your app?
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install AdMob Plus for your framework
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Show your first ad in minutes
+  </Card>
+</CardGroup>
+
+## License
+
+AdMob Plus is [MIT licensed](https://github.com/admob-plus/admob-plus/blob/master/LICENSE), free to use for personal and commercial projects.

@@ -1,0 +1,123 @@
+---
+title: RequestConfig
+description: Configuration interface for AdMob ad request settings
+---
+
+The `RequestConfig` interface defines settings that control ad request behavior, including privacy settings, content ratings, and testing options. This interface is extended by `AdMobConfig` and can be used when creating individual ad requests.
+
+## Interface
+
+```typescript
+interface RequestConfig {
+  maxAdContentRating?: MaxAdContentRating;
+  tagForChildDirectedTreatment?: boolean | null;
+  tagForUnderAgeOfConsent?: boolean | null;
+  testDeviceIds?: string[];
+}
+```
+
+## Properties
+
+<ParamField path="maxAdContentRating" type="MaxAdContentRating" optional>
+  Sets the maximum ad content rating for ads displayed in your app.
+  
+  **Possible values:**
+  - `"G"` - Content suitable for general audiences, including families
+  - `"PG"` - Content suitable for most audiences with parental guidance
+  - `"T"` - Content suitable for teen and older audiences
+  - `"MA"` - Content suitable only for mature audiences
+  - `""` - Content suitability is unspecified (default)
+</ParamField>
+
+<ParamField path="tagForChildDirectedTreatment" type="boolean | null" optional>
+  Indicates whether you want Google to treat your content as child-directed when making ad requests.
+  
+  - `true` - Tag ad requests for child-directed treatment
+  - `false` - Tag ad requests for non-child-directed treatment
+  - `null` or `undefined` - Do not tag ad requests (default)
+  
+  This setting is required for COPPA compliance.
+</ParamField>
+
+<ParamField path="tagForUnderAgeOfConsent" type="boolean | null" optional>
+  Indicates whether users are under the age of consent for data processing.
+  
+  - `true` - User is under the age of consent
+  - `false` - User is not under the age of consent
+  - `null` or `undefined` - Age of consent status is unspecified (default)
+  
+  This setting is required for GDPR compliance in certain regions.
+</ParamField>
+
+<ParamField path="testDeviceIds" type="string[]" optional>
+  An array of test device IDs that should receive test ads instead of production ads.
+  
+  Use this during development to avoid policy violations. Device IDs are typically logged in the console when running the app.
+</ParamField>
+
+## MaxAdContentRating Type
+
+```typescript
+type MaxAdContentRating = "G" | "PG" | "T" | "MA" | "";
+```
+
+| Rating | Description |
+|--------|-------------|
+| `"G"` | General audiences - Content suitable for all ages, including families |
+| `"PG"` | Parental guidance - Content suitable for most audiences with parental guidance |
+| `"T"` | Teen - Content suitable for teen and older audiences |
+| `"MA"` | Mature audiences - Content suitable only for mature audiences |
+| `""` | Unspecified - No content rating specified (allows all ratings) |
+
+## Usage Examples
+
+### Global Configuration
+
+```typescript
+import { AdMob } from '@admob-plus/cordova';
+
+// Set request config globally during initialization
+await AdMob.configure({
+  maxAdContentRating: 'PG',
+  tagForChildDirectedTreatment: false,
+  testDeviceIds: ['YOUR_TEST_DEVICE_ID']
+});
+```
+
+### Child-Directed App
+
+```typescript
+// Configuration for a child-directed app
+await AdMob.configure({
+  maxAdContentRating: 'G',
+  tagForChildDirectedTreatment: true,
+  tagForUnderAgeOfConsent: true
+});
+```
+
+### Testing Configuration
+
+```typescript
+// Enable test ads during development
+await AdMob.configure({
+  testDeviceIds: [
+    'DEVICE_ID_EMULATOR',
+    'DEVICE_ID_PHYSICAL_DEVICE'
+  ]
+});
+```
+
+### GDPR Compliance
+
+```typescript
+// Configuration for users under age of consent (GDPR)
+await AdMob.configure({
+  tagForUnderAgeOfConsent: true,
+  maxAdContentRating: 'G'
+});
+```
+
+## Related
+
+- [AdMobConfig](/api/admob-config) - Extended configuration including app-level settings
+- [Events](/api/events) - AdMob event types

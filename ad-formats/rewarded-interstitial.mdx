@@ -1,0 +1,520 @@
+---
+title: Rewarded Interstitial Ad
+sidebar_label: Rewarded Interstitial
+---
+
+Rewarded interstitial is a type of incentivized ad format that allows you to offer rewards for ads that appear automatically during natural app transitions. Unlike rewarded ads, users aren't required to opt-in to view a rewarded interstitial. This format combines the benefits of interstitial ads with the reward mechanism of rewarded ads.
+
+## Creating a Rewarded Interstitial Ad
+
+<Steps>
+  <Step title="Create Instance">
+    Create a new `RewardedInterstitialAd` instance with your ad unit ID.
+    
+    ```javascript
+    const rewardedInterstitial = new admob.RewardedInterstitialAd({
+      adUnitId: 'ca-app-pub-3940256099942544/5354046379' // Test ad unit
+    })
+    ```
+  </Step>
+  
+  <Step title="Load the Ad">
+    Load the rewarded interstitial ad before showing it.
+    
+    ```javascript
+    await rewardedInterstitial.load()
+    ```
+  </Step>
+  
+  <Step title="Show and Grant Reward">
+    Show the ad and listen for the reward event.
+    
+    ```javascript
+    rewardedInterstitial.on('reward', (evt) => {
+      console.log('User earned:', evt.reward.amount, evt.reward.type)
+      // Grant the reward to the user
+    })
+    
+    await rewardedInterstitial.show()
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+### Constructor Options
+
+<ParamField path="adUnitId" type="string" required>
+  Your AdMob ad unit ID for rewarded interstitial ads.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Optional unique identifier for this ad instance. Defaults to `adUnitId` if not provided.
+</ParamField>
+
+<ParamField path="contentUrl" type="string">
+  URL string for content that is being displayed in your app.
+</ParamField>
+
+<ParamField path="keywords" type="string[]">
+  Array of keyword strings for ad targeting.
+</ParamField>
+
+<ParamField path="npa" type="'1'">
+  Set to `'1'` to enable non-personalized ads (for GDPR compliance).
+</ParamField>
+
+<ParamField path="serverSideVerification" type="object">
+  Server-side verification options for secure reward validation.
+  
+  ```javascript
+  new admob.RewardedInterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    serverSideVerification: {
+      userId: 'user123',
+      customData: 'checkpoint-2'
+    }
+  })
+  ```
+  
+  **Properties:**
+  - `userId` (string): User identifier to pass to your server
+  - `customData` (string): Custom data to pass to your server (max 255 characters)
+</ParamField>
+
+### Methods
+
+#### `load()`
+
+Loads a rewarded interstitial ad from AdMob.
+
+```javascript
+await rewardedInterstitial.load()
+```
+
+**Returns:** `Promise<void>`
+
+#### `show()`
+
+Displays the loaded rewarded interstitial ad.
+
+```javascript
+await rewardedInterstitial.show()
+```
+
+**Returns:** `Promise<void>`
+
+<Warning>
+  Once a rewarded interstitial ad is shown, it cannot be shown again. You must load a new ad after each display.
+</Warning>
+
+#### `isLoaded()`
+
+Checks if an ad is loaded and ready to be shown.
+
+```javascript
+const loaded = await rewardedInterstitial.isLoaded()
+if (loaded) {
+  await rewardedInterstitial.show()
+}
+```
+
+**Returns:** `Promise<boolean>`
+
+#### `on(eventName, callback)`
+
+Registers an event listener for the ad.
+
+```javascript
+const unsubscribe = rewardedInterstitial.on('reward', (evt) => {
+  console.log('Reward earned:', evt.reward)
+})
+
+// Later: remove listener
+unsubscribe()
+```
+
+**Returns:** `Function` - Unsubscribe function
+
+## Events
+
+All events can be listened to using the `on()` method or via global event listeners.
+
+### `load`
+
+Fired when the ad is successfully loaded and ready to show.
+
+```javascript
+rewardedInterstitial.on('load', (evt) => {
+  console.log('Rewarded interstitial ready:', evt.ad.id)
+})
+```
+
+### `loadfail`
+
+Fired when the ad request fails.
+
+```javascript
+rewardedInterstitial.on('loadfail', (evt) => {
+  console.error('Load failed:', evt.error)
+})
+```
+
+### `show`
+
+Fired when the ad is displayed to the user.
+
+```javascript
+rewardedInterstitial.on('show', (evt) => {
+  console.log('Rewarded interstitial displayed')
+})
+```
+
+### `showfail`
+
+Fired when the ad fails to display.
+
+```javascript
+rewardedInterstitial.on('showfail', (evt) => {
+  console.error('Show failed:', evt.error)
+})
+```
+
+### `reward`
+
+**Most Important Event** - Fired when the user has earned the reward by watching the ad.
+
+```javascript
+rewardedInterstitial.on('reward', (evt) => {
+  const { amount, type } = evt.reward
+  console.log(`User earned ${amount} ${type}`)
+  
+  // Grant the reward to the user
+  grantReward(amount, type)
+})
+```
+
+**Event Object:**
+```javascript
+{
+  reward: {
+    amount: 1,         // Number of reward units
+    type: "Reward"     // Type of reward (defined in AdMob)
+  }
+}
+```
+
+<Note>
+  The reward amount and type are configured in your AdMob account when setting up the rewarded interstitial ad unit.
+</Note>
+
+### `dismiss`
+
+Fired when the user closes the ad and returns to the app.
+
+```javascript
+rewardedInterstitial.on('dismiss', (evt) => {
+  console.log('Rewarded interstitial dismissed')
+  // Load next ad
+})
+```
+
+### `impression`
+
+Fired when an impression is recorded for the ad.
+
+```javascript
+rewardedInterstitial.on('impression', (evt) => {
+  console.log('Impression recorded')
+})
+```
+
+### `click`
+
+Fired when the user clicks on the ad.
+
+```javascript
+rewardedInterstitial.on('click', (evt) => {
+  console.log('Ad clicked')
+})
+```
+
+## Usage Examples
+
+### Basic Implementation
+
+```javascript
+let rewardedInterstitial
+
+document.addEventListener('deviceready', async () => {
+  rewardedInterstitial = new admob.RewardedInterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  rewardedInterstitial.on('reward', (evt) => {
+    console.log('User earned:', evt.reward.amount, evt.reward.type)
+    grantReward(evt.reward.amount)
+  })
+  
+  await rewardedInterstitial.load()
+  await rewardedInterstitial.show()
+}, false)
+
+function grantReward(amount) {
+  // Your reward logic here
+  userPoints += amount
+  updateUI()
+}
+```
+
+### Complete Flow with Event Handling
+
+```javascript
+let rewardedInterstitial
+
+document.addEventListener('deviceready', async () => {
+  rewardedInterstitial = new admob.RewardedInterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  // Handle load events
+  rewardedInterstitial.on('load', () => {
+    console.log('Rewarded interstitial is ready')
+  })
+  
+  rewardedInterstitial.on('loadfail', (evt) => {
+    console.error('Failed to load ad:', evt.error)
+  })
+  
+  // Grant reward when earned
+  rewardedInterstitial.on('reward', (evt) => {
+    const { amount, type } = evt.reward
+    console.log(`Granting ${amount} ${type}`)
+    grantUserReward(amount, type)
+  })
+  
+  // Handle show events
+  rewardedInterstitial.on('show', () => {
+    console.log('Ad is being displayed')
+  })
+  
+  rewardedInterstitial.on('showfail', (evt) => {
+    console.error('Failed to show:', evt.error)
+  })
+  
+  // Load next ad after dismiss
+  rewardedInterstitial.on('dismiss', async () => {
+    console.log('Ad dismissed, loading next ad')
+    await rewardedInterstitial.load()
+  })
+  
+  // Preload first ad
+  await rewardedInterstitial.load()
+}, false)
+```
+
+### Transition Points Example
+
+```javascript
+let rewardedInterstitial
+let transitionCount = 0
+
+document.addEventListener('deviceready', async () => {
+  rewardedInterstitial = new admob.RewardedInterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  rewardedInterstitial.on('reward', (evt) => {
+    grantBonusPoints(evt.reward.amount)
+  })
+  
+  rewardedInterstitial.on('dismiss', async () => {
+    await rewardedInterstitial.load()
+  })
+  
+  // Preload
+  await rewardedInterstitial.load()
+}, false)
+
+// Show at natural transition points
+async function onScreenTransition() {
+  transitionCount++
+  
+  // Show rewarded interstitial every 5 transitions
+  if (transitionCount % 5 === 0) {
+    const isLoaded = await rewardedInterstitial.isLoaded()
+    
+    if (isLoaded) {
+      await rewardedInterstitial.show()
+    }
+  }
+}
+```
+
+### Checkpoint Rewards
+
+```javascript
+let rewardedInterstitial
+
+function setupRewardedInterstitial() {
+  rewardedInterstitial = new admob.RewardedInterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    serverSideVerification: {
+      userId: getUserId(),
+      customData: 'checkpoint'
+    }
+  })
+  
+  rewardedInterstitial.on('reward', (evt) => {
+    // Grant bonus for reaching checkpoint
+    const bonusAmount = evt.reward.amount
+    console.log(`Checkpoint bonus: ${bonusAmount}`)
+    
+    addCheckpointBonus(bonusAmount)
+    showBonusMessage(bonusAmount)
+  })
+  
+  rewardedInterstitial.on('dismiss', async () => {
+    // Continue game flow
+    resumeGame()
+    
+    // Load next ad
+    await rewardedInterstitial.load()
+  })
+  
+  rewardedInterstitial.load()
+}
+
+async function onCheckpointReached() {
+  // Pause game
+  pauseGame()
+  
+  // Show rewarded interstitial
+  const isLoaded = await rewardedInterstitial.isLoaded()
+  
+  if (isLoaded) {
+    await rewardedInterstitial.show()
+    // User will get bonus via reward event
+  } else {
+    // No ad available, continue without bonus
+    resumeGame()
+  }
+}
+```
+
+### With Server-Side Verification
+
+```javascript
+const rewardedInterstitial = new admob.RewardedInterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  serverSideVerification: {
+    userId: getCurrentUserId(),
+    customData: JSON.stringify({
+      scene: currentScene,
+      timestamp: Date.now()
+    })
+  }
+})
+
+rewardedInterstitial.on('reward', async (evt) => {
+  console.log('Reward event received')
+  
+  // Your server will receive the callback from Google
+  // Optionally verify with your server before granting
+  try {
+    const verified = await verifyRewardWithServer()
+    
+    if (verified) {
+      grantReward(evt.reward.amount)
+    }
+  } catch (error) {
+    console.error('Verification failed:', error)
+  }
+})
+```
+
+## Comparison with Other Ad Formats
+
+### Rewarded Interstitial vs Rewarded Ad
+
+| Feature | Rewarded Interstitial | Rewarded Ad |
+|---------|----------------------|-------------|
+| User opt-in | No - shown automatically | Yes - user must choose to watch |
+| Timing | Natural transition points | User-initiated |
+| Reward | Always granted | Always granted |
+| Closeable | Can be closed early (still get reward) | Must watch to completion |
+| Use case | Passive rewards during flow | Active reward choice |
+
+### Rewarded Interstitial vs Interstitial
+
+| Feature | Rewarded Interstitial | Interstitial |
+|---------|----------------------|-------------|
+| Reward | Yes - users get reward | No |
+| User perception | More positive (getting reward) | Can be disruptive |
+| Fill rate | May be lower | Typically higher |
+| Best for | Reward-based monetization | General monetization |
+
+## Best Practices
+
+### When to Use Rewarded Interstitials
+
+<Note>
+  **Ideal Use Cases:**
+  
+  - Between game levels or stages
+  - During natural pause points in gameplay
+  - After completing milestones or achievements
+  - Between content sections in non-game apps
+</Note>
+
+### Implementation Guidelines
+
+1. **Natural Transitions**: Only show at natural pause points, never during active gameplay
+2. **Frequency**: Don't show too often - consider showing every 3-5 transitions
+3. **Always Reward**: Make sure the reward is always granted when the event fires
+4. **Preload**: Load ads before you need them to avoid delays
+5. **Fallback**: Have a plan if the ad isn't available
+
+### User Experience
+
+<Warning>
+  **Important Considerations:**
+  
+  - Users don't opt-in to rewarded interstitials, so use them sparingly
+  - Always provide value through the reward mechanism
+  - Don't show immediately after app launch
+  - Consider user engagement patterns
+</Warning>
+
+### Technical Best Practices
+
+1. **Load Early**: Start loading as soon as the previous ad is dismissed
+2. **Check Status**: Use `isLoaded()` before attempting to show
+3. **Error Handling**: Gracefully handle load and show failures
+4. **Server Verification**: Use SSV for high-value rewards
+5. **Analytics**: Track show rates and user response
+
+## Server-Side Verification
+
+For apps with server-side reward systems, enable server-side verification to validate rewards:
+
+```javascript
+const rewardedInterstitial = new admob.RewardedInterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy',
+  serverSideVerification: {
+    userId: 'user_12345',
+    customData: 'checkpoint_level_10'
+  }
+})
+```
+
+<Note>
+  See the [Rewarded Ads Server-Side Verification guide](/cordova/rewarded-ads-ssv) for detailed implementation instructions.
+</Note>
+
+## References
+
+- [Rewarded Interstitial Ads - AdMob Android Documentation](https://developers.google.com/admob/android/rewarded-interstitial)
+- [Rewarded Interstitial Ads - AdMob iOS Documentation](https://developers.google.com/admob/ios/rewarded-interstitial)
+- [Server-Side Verification - AdMob Documentation](https://developers.google.com/admob/android/rewarded-video-ssv)
+- [Ad Format Best Practices - AdMob Help](https://support.google.com/admob/answer/6128738)

@@ -1,0 +1,399 @@
+---
+title: Interstitial Ad
+sidebar_label: Interstitial
+---
+
+Interstitial ads are full-screen ads that cover the interface of their host app. They're typically displayed at natural transition points in the flow of an app, such as between activities or during the pause between levels in a game. When an app shows an interstitial ad, the user has the choice to either tap on the ad and continue to its destination or close it and return to the app.
+
+## Creating an Interstitial Ad
+
+<Steps>
+  <Step title="Create Instance">
+    Create a new `InterstitialAd` instance with your ad unit ID.
+    
+    ```javascript
+    const interstitial = new admob.InterstitialAd({
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712' // Test ad unit
+    })
+    ```
+  </Step>
+  
+  <Step title="Load the Ad">
+    Load the interstitial ad before showing it.
+    
+    ```javascript
+    await interstitial.load()
+    ```
+  </Step>
+  
+  <Step title="Show the Ad">
+    Once loaded, show the ad at an appropriate time.
+    
+    ```javascript
+    await interstitial.show()
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+### Constructor Options
+
+<ParamField path="adUnitId" type="string" required>
+  Your AdMob ad unit ID for interstitial ads.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Optional unique identifier for this ad instance. Defaults to `adUnitId` if not provided.
+</ParamField>
+
+<ParamField path="contentUrl" type="string">
+  URL string for content that is being displayed in your app.
+</ParamField>
+
+<ParamField path="keywords" type="string[]">
+  Array of keyword strings for ad targeting.
+  
+  ```javascript
+  new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    keywords: ['gaming', 'puzzle']
+  })
+  ```
+</ParamField>
+
+<ParamField path="npa" type="'1'">
+  Set to `'1'` to enable non-personalized ads (for GDPR compliance).
+  
+  ```javascript
+  new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy',
+    npa: '1'
+  })
+  ```
+</ParamField>
+
+### Methods
+
+#### `load()`
+
+Loads an interstitial ad from AdMob.
+
+```javascript
+await interstitial.load()
+```
+
+**Returns:** `Promise<void>`
+
+<Note>
+  Always load interstitial ads before you plan to show them. Loading can take several seconds.
+</Note>
+
+#### `show()`
+
+Displays the loaded interstitial ad.
+
+```javascript
+await interstitial.show()
+```
+
+**Returns:** `Promise<void>`
+
+<Warning>
+  Once an interstitial ad is shown, it cannot be shown again. You must load a new ad after each display.
+</Warning>
+
+#### `isLoaded()`
+
+Checks if an ad is loaded and ready to be shown.
+
+```javascript
+const loaded = await interstitial.isLoaded()
+if (loaded) {
+  await interstitial.show()
+}
+```
+
+**Returns:** `Promise<boolean>`
+
+#### `on(eventName, callback)`
+
+Registers an event listener for the ad.
+
+```javascript
+const unsubscribe = interstitial.on('load', (evt) => {
+  console.log('Interstitial loaded:', evt.ad)
+})
+
+// Later: remove listener
+unsubscribe()
+```
+
+**Returns:** `Function` - Unsubscribe function
+
+## Events
+
+All events can be listened to using the `on()` method or via global event listeners.
+
+### `load`
+
+Fired when the ad is successfully loaded and ready to show.
+
+```javascript
+interstitial.on('load', (evt) => {
+  console.log('Interstitial ready:', evt.ad.id)
+})
+```
+
+### `loadfail`
+
+Fired when the ad request fails.
+
+```javascript
+interstitial.on('loadfail', (evt) => {
+  console.error('Load failed:', evt.error)
+})
+```
+
+### `show`
+
+Fired when the ad is displayed to the user.
+
+```javascript
+interstitial.on('show', (evt) => {
+  console.log('Interstitial displayed')
+})
+```
+
+### `showfail`
+
+Fired when the ad fails to display.
+
+```javascript
+interstitial.on('showfail', (evt) => {
+  console.error('Show failed:', evt.error)
+})
+```
+
+### `dismiss`
+
+Fired when the user closes the ad and returns to the app.
+
+```javascript
+interstitial.on('dismiss', (evt) => {
+  console.log('Interstitial dismissed')
+  // Load next ad
+})
+```
+
+### `impression`
+
+Fired when an impression is recorded for the ad.
+
+```javascript
+interstitial.on('impression', (evt) => {
+  console.log('Impression recorded')
+})
+```
+
+### `click`
+
+Fired when the user clicks on the ad.
+
+```javascript
+interstitial.on('click', (evt) => {
+  console.log('Ad clicked')
+})
+```
+
+## Usage Examples
+
+### Basic Implementation
+
+```javascript
+let interstitial
+
+document.addEventListener('deviceready', async () => {
+  interstitial = new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  await interstitial.load()
+  await interstitial.show()
+}, false)
+```
+
+### With Event Handling
+
+```javascript
+let interstitial
+
+document.addEventListener('deviceready', async () => {
+  interstitial = new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  interstitial.on('load', (evt) => {
+    console.log('Interstitial loaded, ready to show')
+  })
+  
+  interstitial.on('loadfail', (evt) => {
+    console.error('Failed to load:', evt.error)
+  })
+  
+  await interstitial.load()
+  await interstitial.show()
+}, false)
+```
+
+### Auto-reload After Dismiss
+
+```javascript
+let interstitial
+
+document.addEventListener('deviceready', async () => {
+  interstitial = new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  await interstitial.load()
+  await interstitial.show()
+}, false)
+
+// Listen globally for dismiss events
+document.addEventListener('admob.ad.dismiss', async (evt) => {
+  if (evt.ad instanceof admob.InterstitialAd) {
+    console.log('Interstitial dismissed, loading next ad')
+    // Load the next ad immediately
+    await interstitial.load()
+  }
+})
+```
+
+### Check Load Status Before Showing
+
+```javascript
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+// Start loading early
+await interstitial.load()
+
+// Later, at a transition point
+async function showAdIfReady() {
+  const isLoaded = await interstitial.isLoaded()
+  
+  if (isLoaded) {
+    await interstitial.show()
+  } else {
+    console.log('Ad not ready yet')
+    // Load and show
+    await interstitial.load()
+    await interstitial.show()
+  }
+}
+```
+
+### Level Complete Example
+
+```javascript
+let interstitial
+let levelCount = 0
+
+document.addEventListener('deviceready', async () => {
+  interstitial = new admob.InterstitialAd({
+    adUnitId: 'ca-app-pub-xxx/yyy'
+  })
+  
+  // Preload first ad
+  await interstitial.load()
+  
+  // Reload after dismiss
+  interstitial.on('dismiss', async () => {
+    await interstitial.load()
+  })
+}, false)
+
+function onLevelComplete() {
+  levelCount++
+  
+  // Show ad every 3 levels
+  if (levelCount % 3 === 0) {
+    showInterstitial()
+  }
+}
+
+async function showInterstitial() {
+  const isLoaded = await interstitial.isLoaded()
+  
+  if (isLoaded) {
+    await interstitial.show()
+  }
+}
+```
+
+### Error Handling
+
+```javascript
+const interstitial = new admob.InterstitialAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+})
+
+try {
+  await interstitial.load()
+  await interstitial.show()
+} catch (error) {
+  console.error('Ad error:', error)
+  // Continue with app flow
+}
+
+// Or with events
+interstitial.on('loadfail', (evt) => {
+  console.error('Load failed:', evt.error)
+  // Implement retry logic or continue without ad
+})
+
+interstitial.on('showfail', (evt) => {
+  console.error('Show failed:', evt.error)
+  // Continue with app flow
+})
+```
+
+## Best Practices
+
+<Note>
+  **Timing is Everything**
+  
+  Display interstitial ads at natural transition points such as:
+  - Between game levels
+  - After completing a task
+  - During navigation between app sections
+  
+  Avoid showing ads during active gameplay or user interaction.
+</Note>
+
+<Warning>
+  **One-Time Use**
+  
+  Interstitial ads can only be shown once. After an ad is displayed or dismissed, you must load a new ad before showing another one.
+</Warning>
+
+### Preloading Strategy
+
+1. Load ads early, before you need them
+2. Load the next ad immediately after the current one is dismissed
+3. Check `isLoaded()` before attempting to show
+4. Have a fallback if ads fail to load
+
+### Frequency Capping
+
+- Don't show interstitials too frequently (e.g., not on every level)
+- Consider user experience over ad revenue
+- Follow [AdMob policies](https://support.google.com/admob/answer/6128543) on ad placement
+
+## References
+
+- [Interstitial Ads - AdMob Android Documentation](https://developers.google.com/admob/android/interstitial)
+- [Interstitial Ads - AdMob iOS Documentation](https://developers.google.com/admob/ios/interstitial)
+- [Interstitial Ad Guidance - AdMob Help](https://support.google.com/admob/answer/6066980)

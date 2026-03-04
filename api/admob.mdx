@@ -1,0 +1,195 @@
+---
+title: AdMob
+description: Core AdMob class for initializing and configuring the SDK
+---
+
+The `AdMob` class is the main entry point for the AdMob Plus plugin. It provides methods to initialize the SDK, configure global settings, and access all ad format classes.
+
+## Properties
+
+### Ad Format Classes
+
+The AdMob class exposes all ad format classes as readonly properties:
+
+<ResponseField name="AppOpenAd" type="class">
+  App Open Ad format class. See [AppOpenAd](/api/app-open-ad) for details.
+</ResponseField>
+
+<ResponseField name="BannerAd" type="class">
+  Banner Ad format class. See [BannerAd](/api/banner-ad) for details.
+</ResponseField>
+
+<ResponseField name="InterstitialAd" type="class">
+  Interstitial Ad format class. See [InterstitialAd](/api/interstitial-ad) for details.
+</ResponseField>
+
+<ResponseField name="NativeAd" type="class">
+  Native Ad format class. See [NativeAd](/api/native-ad) for details.
+</ResponseField>
+
+<ResponseField name="RewardedAd" type="class">
+  Rewarded Ad format class. See [RewardedAd](/api/rewarded-ad) for details.
+</ResponseField>
+
+<ResponseField name="RewardedInterstitialAd" type="class">
+  Rewarded Interstitial Ad format class. See [RewardedInterstitialAd](/api/rewarded-interstitial-ad) for details.
+</ResponseField>
+
+<ResponseField name="WebViewAd" type="class">
+  WebView Ad format class. See [WebViewAd](/api/webview-ad) for details.
+</ResponseField>
+
+### Events
+
+<ResponseField name="Events" type="enum">
+  Enum containing all AdMob event types. See [Events](/api/events) for details.
+</ResponseField>
+
+## Methods
+
+### start()
+
+Initializes the AdMob SDK. This method must be called before creating or loading any ads. The method is idempotent - calling it multiple times will return the same promise.
+
+```typescript
+start(): Promise<{ version: string }>
+```
+
+<ResponseField name="version" type="string">
+  The version of the AdMob SDK that was initialized.
+</ResponseField>
+
+#### Example
+
+```typescript
+try {
+  const result = await admob.start();
+  console.log('AdMob SDK started, version:', result.version);
+} catch (error) {
+  console.error('Failed to start AdMob SDK:', error);
+}
+```
+
+### configure()
+
+Configures global AdMob settings. This method can be called at any time to update SDK configuration.
+
+```typescript
+configure(config: AdMobConfig): Promise<void>
+```
+
+#### Parameters
+
+<ParamField path="config" type="AdMobConfig" required>
+  Configuration object for AdMob SDK settings.
+
+  <ParamField path="config.maxAdContentRating" type="'G' | 'PG' | 'T' | 'MA' | ''">
+    Maximum ad content rating for ad requests:
+    - `'G'` - Content suitable for general audiences, including families
+    - `'PG'` - Content suitable for most audiences with parental guidance
+    - `'T'` - Content suitable for teen and older audiences
+    - `'MA'` - Content suitable only for mature audiences
+    - `''` - Content suitability is unspecified
+  </ParamField>
+
+  <ParamField path="config.tagForChildDirectedTreatment" type="boolean | null">
+    Tag requests for child-directed treatment:
+    - `true` - Tag for child-directed treatment
+    - `false` - Tag for non-child-directed treatment
+    - `null` - Do not tag
+  </ParamField>
+
+  <ParamField path="config.tagForUnderAgeOfConsent" type="boolean | null">
+    Tag requests for users under the age of consent:
+    - `true` - Tag for under age of consent
+    - `false` - Tag for not under age of consent
+    - `null` - Do not tag
+  </ParamField>
+
+  <ParamField path="config.testDeviceIds" type="string[]">
+    Array of test device IDs to receive test ads. Use this during development to avoid policy violations.
+  </ParamField>
+
+  <ParamField path="config.appMuted" type="boolean">
+    Whether the app's audio is muted. Affects ad audio playback.
+  </ParamField>
+
+  <ParamField path="config.appVolume" type="number">
+    App volume level (0.0 to 1.0). Affects ad audio playback volume.
+  </ParamField>
+
+  <ParamField path="config.publisherFirstPartyIDEnabled" type="boolean">
+    Enable publisher first-party ID for improved ad targeting and measurement.
+  </ParamField>
+
+  <ParamField path="config.sameAppKey" type="boolean" deprecated>
+    Deprecated. Use `publisherFirstPartyIDEnabled` instead.
+  </ParamField>
+</ParamField>
+
+#### Example
+
+```typescript
+// Configure AdMob with child-directed treatment and test devices
+await admob.configure({
+  maxAdContentRating: 'PG',
+  tagForChildDirectedTreatment: true,
+  testDeviceIds: ['DEVICE_ID_1', 'DEVICE_ID_2'],
+  appVolume: 0.8,
+  publisherFirstPartyIDEnabled: true
+});
+```
+
+## Global Instance
+
+A global `admob` instance is available throughout your application:
+
+```typescript
+declare global {
+  const admob: AdMob;
+}
+```
+
+## Type Definitions
+
+```typescript
+interface AdMobConfig extends RequestConfig {
+  appMuted?: boolean;
+  appVolume?: number;
+  sameAppKey?: boolean; // deprecated
+  publisherFirstPartyIDEnabled?: boolean;
+}
+
+interface RequestConfig {
+  maxAdContentRating?: 'G' | 'PG' | 'T' | 'MA' | '';
+  tagForChildDirectedTreatment?: boolean | null;
+  tagForUnderAgeOfConsent?: boolean | null;
+  testDeviceIds?: string[];
+}
+```
+
+## Usage Example
+
+```typescript
+import AdMob from 'admob-plus-cordova';
+
+// Or use the global instance
+// const admob = window.admob;
+
+// Initialize the SDK
+await admob.start();
+
+// Configure global settings
+await admob.configure({
+  maxAdContentRating: 'PG',
+  tagForChildDirectedTreatment: false,
+  testDeviceIds: ['TEST_DEVICE_ID']
+});
+
+// Create and show a banner ad
+const banner = new admob.BannerAd({
+  adUnitId: 'ca-app-pub-xxx/yyy'
+});
+
+await banner.show();
+```

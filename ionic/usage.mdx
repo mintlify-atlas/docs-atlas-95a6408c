@@ -1,0 +1,387 @@
+---
+title: Ionic Usage
+description: Display ads in your Ionic app
+---
+
+Learn how to implement AdMob ads in your Ionic Framework application using AdMob Plus.
+
+## Basic Setup
+
+### Inject the Service
+
+Inject the AdMob service into your component or service:
+
+```typescript
+import { Component } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { AdMob, BannerAd } from '@admob-plus/ionic/ngx';
+
+@Component({
+  selector: 'app-home',
+  template: `<ion-content>Your content</ion-content>`,
+})
+export class HomePage {
+  constructor(
+    private platform: Platform,
+    private admob: AdMob
+  ) {}
+
+  async ngOnInit() {
+    await this.platform.ready();
+    await this.admob.start();
+  }
+}
+```
+
+## Displaying Ads
+
+### Banner Ad
+
+Display a banner ad:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { AdMob, BannerAd } from '@admob-plus/ionic/ngx';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Home</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <p>Your content here</p>
+    </ion-content>
+  `
+})
+export class HomePage implements OnInit {
+  private banner: BannerAd;
+
+  constructor(private admob: AdMob) {}
+
+  async ngOnInit() {
+    await this.admob.start();
+    await this.showBanner();
+  }
+
+  async showBanner() {
+    this.banner = new this.admob.BannerAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+      position: 'bottom',
+    });
+
+    await this.banner.show();
+  }
+}
+```
+
+<Tip>
+  Use test ad unit IDs during development. See the [Test Ads guide](/guides/test-ads).
+</Tip>
+
+### Interstitial Ad
+
+Show an interstitial ad:
+
+```typescript
+import { Component } from '@angular/core';
+import { AdMob, InterstitialAd } from '@admob-plus/ionic/ngx';
+
+@Component({
+  selector: 'app-game',
+  template: `
+    <ion-button (click)="showInterstitial()">Next Level</ion-button>
+  `
+})
+export class GamePage {
+  constructor(private admob: AdMob) {}
+
+  async showInterstitial() {
+    const interstitial = new this.admob.InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    await interstitial.load();
+
+    if (await interstitial.isLoaded()) {
+      await interstitial.show();
+    }
+  }
+}
+```
+
+### Rewarded Ad
+
+Implement rewarded video ads:
+
+```typescript
+import { Component } from '@angular/core';
+import { AdMob, RewardedAd } from '@admob-plus/ionic/ngx';
+import { AlertController } from '@ionic/angular';
+
+@Component({
+  selector: 'app-rewards',
+  template: `
+    <ion-button (click)="watchAd()">Watch Ad for Coins</ion-button>
+  `
+})
+export class RewardsPage {
+  constructor(
+    private admob: AdMob,
+    private alertCtrl: AlertController
+  ) {}
+
+  async watchAd() {
+    const rewarded = new this.admob.RewardedAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    rewarded.on('reward', async (reward) => {
+      const alert = await this.alertCtrl.create({
+        header: 'Reward Earned!',
+        message: `You earned ${reward.amount} ${reward.type}`,
+        buttons: ['OK'],
+      });
+      await alert.present();
+      // Grant the reward
+    });
+
+    await rewarded.load();
+
+    if (await rewarded.isLoaded()) {
+      await rewarded.show();
+    }
+  }
+}
+```
+
+## Event Handling
+
+Listen to ad lifecycle events:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { AdMob, InterstitialAd } from '@admob-plus/ionic/ngx';
+
+@Component({
+  selector: 'app-ads',
+  template: `<ion-content></ion-content>`
+})
+export class AdsPage implements OnInit {
+  private interstitial: InterstitialAd;
+
+  constructor(private admob: AdMob) {}
+
+  async ngOnInit() {
+    await this.admob.start();
+    await this.setupInterstitial();
+  }
+
+  async setupInterstitial() {
+    this.interstitial = new this.admob.InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    this.interstitial.on('load', () => {
+      console.log('Interstitial loaded');
+    });
+
+    this.interstitial.on('loadfail', (error) => {
+      console.error('Interstitial failed to load:', error);
+    });
+
+    this.interstitial.on('show', () => {
+      console.log('Interstitial shown');
+    });
+
+    this.interstitial.on('dismiss', () => {
+      console.log('Interstitial dismissed');
+      // Preload next ad
+      this.setupInterstitial();
+    });
+
+    await this.interstitial.load();
+  }
+}
+```
+
+## Configuration
+
+### Global Configuration
+
+Configure AdMob settings:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { AdMob } from '@admob-plus/ionic/ngx';
+
+@Component({
+  selector: 'app-root',
+  template: `<ion-router-outlet></ion-router-outlet>`
+})
+export class AppComponent implements OnInit {
+  constructor(
+    private platform: Platform,
+    private admob: AdMob
+  ) {}
+
+  async ngOnInit() {
+    await this.platform.ready();
+    await this.admob.start();
+    
+    await this.admob.configure({
+      maxAdContentRating: 'PG',
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
+      testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+    });
+  }
+}
+```
+
+## Complete Example
+
+Here's a complete Ionic page with ads:
+
+```typescript
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { AdMob, BannerAd, InterstitialAd, RewardedAd } from '@admob-plus/ionic/ngx';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>AdMob Demo</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="ion-padding">
+        <ion-button expand="block" (click)="showInterstitial()">
+          Show Interstitial
+        </ion-button>
+        
+        <ion-button expand="block" (click)="showRewarded()">
+          Watch Rewarded Ad
+        </ion-button>
+      </div>
+    </ion-content>
+  `
+})
+export class HomePage implements OnInit, OnDestroy {
+  private banner: BannerAd;
+  private interstitial: InterstitialAd;
+
+  constructor(
+    private platform: Platform,
+    private admob: AdMob
+  ) {}
+
+  async ngOnInit() {
+    await this.platform.ready();
+    await this.initializeAds();
+  }
+
+  async initializeAds() {
+    await this.admob.start();
+    
+    await this.admob.configure({
+      testDeviceIds: ['YOUR_TEST_DEVICE_ID'],
+    });
+
+    await this.showBanner();
+    await this.preloadInterstitial();
+  }
+
+  async showBanner() {
+    this.banner = new this.admob.BannerAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+      position: 'bottom',
+    });
+
+    await this.banner.show();
+  }
+
+  async preloadInterstitial() {
+    this.interstitial = new this.admob.InterstitialAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    this.interstitial.on('dismiss', () => {
+      // Preload next interstitial
+      this.preloadInterstitial();
+    });
+
+    await this.interstitial.load();
+  }
+
+  async showInterstitial() {
+    if (this.interstitial && await this.interstitial.isLoaded()) {
+      await this.interstitial.show();
+    }
+  }
+
+  async showRewarded() {
+    const rewarded = new this.admob.RewardedAd({
+      adUnitId: 'ca-app-pub-xxx/xxx',
+    });
+
+    rewarded.on('reward', (reward) => {
+      console.log(`Reward earned: ${reward.amount} ${reward.type}`);
+      // Grant the reward to the user
+    });
+
+    await rewarded.load();
+
+    if (await rewarded.isLoaded()) {
+      await rewarded.show();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.banner) {
+      this.banner.hide();
+    }
+  }
+}
+```
+
+## Best Practices
+
+<Check>
+  Initialize AdMob after platform is ready
+</Check>
+<Check>
+  Preload interstitial and rewarded ads for instant display
+</Check>
+<Check>
+  Hide banner ads in `ngOnDestroy()` to prevent memory leaks
+</Check>
+<Check>
+  Handle ad load failures gracefully
+</Check>
+<Check>
+  Use Ionic's loading controller while ads are loading
+</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ad Formats" icon="rectangle-ad" href="/ad-formats/banner">
+    Explore all available ad formats
+  </Card>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Advanced configuration options
+  </Card>
+  <Card title="Events" icon="bolt" href="/guides/events">
+    Complete event reference
+  </Card>
+  <Card title="Consent" icon="shield-check" href="/guides/consent">
+    GDPR/CCPA compliance
+  </Card>
+</CardGroup>
