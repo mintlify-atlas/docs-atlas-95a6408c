@@ -1,0 +1,235 @@
+---
+title: WebViewAd
+description: API reference for the WebViewAd class
+---
+
+The `WebViewAd` class provides AdSense integration for Cordova WebView applications.
+
+<Warning>
+  WebViewAd requires the `admob-plus-cordova-webview-ad` plugin and a Google AdSense account.
+</Warning>
+
+## Class: WebViewAd
+
+Extends `MobileAd<WebViewAdOptions>`
+
+### Constructor
+
+```typescript
+new WebViewAd(options: WebViewAdOptions)
+```
+
+Creates a new WebView Ad instance.
+
+#### WebViewAdOptions
+
+<ParamField path="adsense" type="string" required>
+  Your Google AdSense publisher ID (format: `ca-pub-xxxxxxxxxxxxx`)
+</ParamField>
+
+<ParamField path="src" type="string">
+  Custom AdSense script source URL. 
+  
+  Default: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js`
+</ParamField>
+
+<ParamField path="npa" type="'1' | undefined">
+  Request non-personalized ads. Set to `"1"` to comply with GDPR for users who haven't consented to personalized ads.
+</ParamField>
+
+<ParamField path="adUnitId" type="string">
+  Not used for WebView Ads. Automatically set to empty string.
+</ParamField>
+
+### Static Methods
+
+#### checkIntegration()
+
+```typescript
+static async checkIntegration(): Promise<void>
+```
+
+Verifies that the WebView is properly configured for AdSense ads.
+
+**Returns:** Promise that resolves if integration is successful
+
+**Example:**
+```typescript
+try {
+  await WebViewAd.checkIntegration();
+  console.log('WebView ready for ads');
+} catch (error) {
+  console.error('WebView not configured:', error);
+}
+```
+
+### Instance Methods
+
+#### addAd()
+
+```typescript
+addAd(options: AddAdOptions): boolean
+```
+
+Inserts an AdSense ad unit into a specified HTML element.
+
+**Parameters:**
+
+<ParamField path="options.element" type="HTMLElement" required>
+  The DOM element where the ad will be inserted
+</ParamField>
+
+<ParamField path="options.slot" type="string" required>
+  Your AdSense ad slot ID
+</ParamField>
+
+<ParamField path="options.format" type="string">
+  Ad format: `"auto"`, `"horizontal"`, `"vertical"`, `"rectangle"`, etc.
+  
+  Default: `"auto"`
+</ParamField>
+
+<ParamField path="options.fullWidth" type="boolean">
+  Enable full-width responsive behavior.
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="options.html" type="string">
+  Custom HTML for the ad unit. When provided, other options are ignored.
+</ParamField>
+
+**Returns:** `boolean` - `true` if ad was added successfully, `false` otherwise
+
+**Example:**
+```typescript
+const success = webviewAd.addAd({
+  element: document.getElementById('ad-container'),
+  slot: '1234567890',
+  format: 'auto',
+  fullWidth: true,
+});
+```
+
+#### show()
+
+```typescript
+async show(): Promise<void>
+```
+
+Inherited from `MobileAd`. Loads and displays the WebView ad.
+
+**Example:**
+```typescript
+await webviewAd.show();
+```
+
+## Type Definitions
+
+```typescript
+interface WebViewAdOptions extends MobileAdOptions {
+  src?: string;
+  adsense: string;
+  npa?: "1";
+}
+
+interface AddAdOptions {
+  element: HTMLElement;
+  slot: string;
+  format?: string;
+  fullWidth?: boolean;
+  html?: string;
+}
+```
+
+## Complete Example
+
+```typescript
+import { WebViewAd } from 'admob-plus-cordova';
+
+class AdManager {
+  private webviewAd: WebViewAd;
+
+  async initialize() {
+    // Verify WebView integration
+    await WebViewAd.checkIntegration();
+
+    // Create WebViewAd instance
+    this.webviewAd = new WebViewAd({
+      adsense: 'ca-pub-1234567890123456',
+      npa: '1', // Non-personalized ads
+    });
+  }
+
+  addHeaderAd() {
+    const element = document.getElementById('header-ad');
+    if (!element) return;
+
+    const success = this.webviewAd.addAd({
+      element,
+      slot: '1111111111',
+      format: 'horizontal',
+      fullWidth: true,
+    });
+
+    if (success) {
+      console.log('Header ad added');
+    }
+  }
+
+  addContentAds() {
+    const containers = document.querySelectorAll('.ad-container');
+    
+    containers.forEach((element, index) => {
+      this.webviewAd.addAd({
+        element: element as HTMLElement,
+        slot: `${2222222220 + index}`,
+        format: 'auto',
+      });
+    });
+  }
+}
+
+// Usage
+document.addEventListener('deviceready', async () => {
+  const adManager = new AdManager();
+  await adManager.initialize();
+  adManager.addHeaderAd();
+  adManager.addContentAds();
+});
+```
+
+## Lifecycle Management
+
+WebViewAd automatically handles:
+
+- **App Pause**: Saves current URL state
+- **App Resume**: Restores original URL
+- **History Management**: Prevents URL manipulation from breaking ads
+
+No manual cleanup is required for lifecycle events.
+
+## Platform Support
+
+| Platform | Supported |
+|----------|----------|
+| Android  | ✓ Yes    |
+| iOS      | ✓ Yes    |
+| Browser  | ✗ No     |
+
+## Notes
+
+<Note>
+  WebViewAd uses Google AdSense, not AdMob. Revenue reporting and ad management are done through your AdSense account.
+</Note>
+
+<Warning>
+  Not all WebView implementations support AdSense ads. Always verify with `checkIntegration()` before deployment.
+</Warning>
+
+## See Also
+
+- [WebView Ad Guide](/ad-formats/webview)
+- [MobileAd Base Class](/api/mobile-ad)
+- [Banner Ad](/api/banner-ad)
+- [Native Ad](/api/native-ad)

@@ -56,7 +56,8 @@
               "ad-formats/rewarded",
               "ad-formats/rewarded-interstitial",
               "ad-formats/app-open",
-              "ad-formats/native"
+              "ad-formats/native",
+              "ad-formats/webview"
             ]
           },
           {
@@ -96,7 +97,8 @@
               "api/rewarded-ad",
               "api/rewarded-interstitial-ad",
               "api/app-open-ad",
-              "api/native-ad"
+              "api/native-ad",
+              "api/webview-ad"
             ]
           },
           {

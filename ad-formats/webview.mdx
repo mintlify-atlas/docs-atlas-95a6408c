@@ -1,0 +1,244 @@
+---
+title: WebView Ad
+description: AdSense ads displayed in WebView
+---
+
+<Warning>
+  WebView Ads use Google AdSense and require special setup. This feature integrates AdSense ads into your Cordova WebView app.
+</Warning>
+
+WebView Ads allow you to monetize your Cordova app using Google AdSense instead of traditional AdMob ads. This is useful for apps that display web content.
+
+## Installation
+
+In addition to `admob-plus-cordova`, install the WebView Ad plugin:
+
+```bash
+cordova plugin add admob-plus-cordova-webview-ad
+```
+
+## Setup Requirements
+
+WebView Ads require:
+- Google AdSense account
+- AdSense publisher ID (ca-pub-xxxxx)
+- WebView configured for ads
+
+<Note>
+  WebView Ads are only supported on Android and iOS platforms with properly configured WebView.
+</Note>
+
+## WebViewAdOptions
+
+<ParamField path="adsense" type="string" required>
+  Your AdSense publisher ID (e.g., "ca-pub-1234567890123456")
+</ParamField>
+
+<ParamField path="src" type="string">
+  Custom AdSense script URL. Defaults to the standard AdSense script.
+</ParamField>
+
+<ParamField path="npa" type="'1' | undefined">
+  Set to "1" to request non-personalized ads for GDPR compliance.
+</ParamField>
+
+## Methods
+
+### checkIntegration()
+
+Static method to verify WebView integration:
+
+```typescript
+await WebViewAd.checkIntegration();
+```
+
+This navigates to a test page to verify that the WebView is properly configured.
+
+### addAd()
+
+Add an ad to a specific element:
+
+<ParamField path="element" type="HTMLElement" required>
+  The HTML element where the ad will be inserted
+</ParamField>
+
+<ParamField path="slot" type="string" required>
+  Your AdSense ad slot ID
+</ParamField>
+
+<ParamField path="format" type="string">
+  Ad format (default: "auto")
+</ParamField>
+
+<ParamField path="fullWidth" type="boolean">
+  Enable full-width responsive ads (default: true)
+</ParamField>
+
+<ParamField path="html" type="string">
+  Custom HTML for the ad unit. If provided, overrides other options.
+</ParamField>
+
+## Usage Examples
+
+### Basic WebView Ad
+
+```typescript
+import { WebViewAd } from 'admob-plus-cordova';
+
+// Initialize WebView Ad
+const webviewAd = new WebViewAd({
+  adsense: 'ca-pub-1234567890123456',
+});
+
+// Add an ad to an element
+const adContainer = document.getElementById('ad-container');
+webviewAd.addAd({
+  element: adContainer,
+  slot: '1234567890',
+  format: 'auto',
+  fullWidth: true,
+});
+```
+
+### Non-Personalized Ads
+
+For GDPR compliance, request non-personalized ads:
+
+```typescript
+const webviewAd = new WebViewAd({
+  adsense: 'ca-pub-1234567890123456',
+  npa: '1', // Request non-personalized ads
+});
+```
+
+### Multiple Ads
+
+Add multiple ad units to different elements:
+
+```typescript
+const webviewAd = new WebViewAd({
+  adsense: 'ca-pub-1234567890123456',
+});
+
+// Header ad
+webviewAd.addAd({
+  element: document.getElementById('header-ad'),
+  slot: '1111111111',
+  format: 'horizontal',
+});
+
+// Sidebar ad
+webviewAd.addAd({
+  element: document.getElementById('sidebar-ad'),
+  slot: '2222222222',
+  format: 'rectangle',
+});
+
+// Footer ad
+webviewAd.addAd({
+  element: document.getElementById('footer-ad'),
+  slot: '3333333333',
+  format: 'auto',
+});
+```
+
+### Custom HTML
+
+Provide custom AdSense HTML:
+
+```typescript
+const customHtml = `
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-1234567890123456"
+       data-ad-slot="1234567890"
+       data-ad-format="auto"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+`;
+
+webviewAd.addAd({
+  element: document.getElementById('custom-ad'),
+  slot: '', // Not used with custom HTML
+  html: customHtml,
+});
+```
+
+### Verify Integration
+
+Before using WebView Ads in production, verify your setup:
+
+```typescript
+try {
+  await WebViewAd.checkIntegration();
+  console.log('WebView integration successful');
+} catch (error) {
+  console.error('WebView integration failed:', error);
+}
+```
+
+## Lifecycle Behavior
+
+WebView Ads automatically handle app pause/resume:
+
+- **On Pause**: Preserves the current URL state
+- **On Resume**: Restores the original URL state
+
+This ensures ads continue to function correctly when the app is backgrounded and resumed.
+
+## Best Practices
+
+<Check>
+  Verify WebView integration before deploying to production
+</Check>
+<Check>
+  Use appropriate ad formats for different screen sections
+</Check>
+<Check>
+  Request non-personalized ads (npa: '1') for users in GDPR regions
+</Check>
+<Check>
+  Test ads thoroughly in both Android and iOS WebView
+</Check>
+<Check>
+  Follow AdSense policies and placement guidelines
+</Check>
+
+## Limitations
+
+<Warning>
+  - WebView Ads require a properly configured WebView with AdSense support
+  - Not all Cordova WebView implementations support WebView Ads
+  - Browser platform is not supported
+  - Revenue and analytics are managed through AdSense, not AdMob
+</Warning>
+
+## Troubleshooting
+
+<Accordion title="Ads not displaying">
+  1. Verify your AdSense publisher ID is correct
+  2. Check that ad slots are valid and approved
+  3. Run `WebViewAd.checkIntegration()` to verify setup
+  4. Ensure the WebView supports AdSense (check console for errors)
+</Accordion>
+
+<Accordion title="Integration check fails">
+  The WebView may not be properly configured. Ensure:
+  - `admob-plus-cordova-webview-ad` plugin is installed
+  - Platform is Android or iOS (not browser)
+  - WebView has necessary ad support capabilities
+</Accordion>
+
+<Accordion title="Revenue not tracking">
+  WebView Ads use AdSense for revenue tracking, not AdMob:
+  - Check your AdSense dashboard for reports
+  - Verify ads are approved and serving
+  - Ensure ad placements comply with AdSense policies
+</Accordion>
+
+## See Also
+
+- [AdSense Help Center](https://support.google.com/adsense/)
+- [AdSense Policies](https://support.google.com/adsense/answer/48182)
+- [Banner Ads](/ad-formats/banner) - Traditional AdMob banner ads
+- [Native Ads](/ad-formats/native) - AdMob native ads
