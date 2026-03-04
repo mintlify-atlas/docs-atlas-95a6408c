@@ -1,0 +1,128 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "AdMob Plus",
+  "projectDescription": "Trustable AdMob Plugin for Cordova, Capacitor, Ionic, and React Native",
+  "theme": "palm",
+  "primaryColor": "#4285F4",
+  "lightColor": "#669DF6",
+  "darkColor": "#1967D2",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Frameworks",
+            "pages": [
+              "cordova/overview",
+              "cordova/installation",
+              "cordova/usage",
+              "capacitor/overview",
+              "capacitor/installation",
+              "capacitor/usage",
+              "react-native/overview",
+              "react-native/installation",
+              "react-native/usage",
+              "ionic/overview",
+              "ionic/installation",
+              "ionic/usage"
+            ]
+          },
+          {
+            "group": "Ad Formats",
+            "pages": [
+              "ad-formats/banner",
+              "ad-formats/interstitial",
+              "ad-formats/rewarded",
+              "ad-formats/rewarded-interstitial",
+              "ad-formats/app-open",
+              "ad-formats/native"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/configuration",
+              "guides/consent",
+              "guides/test-ads",
+              "guides/events",
+              "guides/targeting"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/overview",
+              "cli/commands"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core",
+            "pages": [
+              "api/admob",
+              "api/mobile-ad"
+            ]
+          },
+          {
+            "group": "Ad Classes",
+            "pages": [
+              "api/banner-ad",
+              "api/interstitial-ad",
+              "api/rewarded-ad",
+              "api/rewarded-interstitial-ad",
+              "api/app-open-ad",
+              "api/native-ad"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "api/admob-config",
+              "api/request-config",
+              "api/events"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-framework support (Cordova, Capacitor, React Native, Ionic)",
+    "All AdMob ad formats (Banner, Interstitial, Rewarded, App Open, Native)",
+    "TypeScript-first API with full type definitions",
+    "User consent management (GDPR, CCPA compliance)",
+    "Test ad support for development",
+    "Event-driven architecture for ad lifecycle",
+    "CLI tool for project setup and diagnostics",
+    "No ad-sharing or remote control"
+  ],
+  "publicApiSurface": [
+    "AdMob.start()",
+    "AdMob.configure()",
+    "BannerAd",
+    "InterstitialAd",
+    "RewardedAd",
+    "RewardedInterstitialAd",
+    "AppOpenAd",
+    "NativeAd",
+    "Events",
+    "AdMobConfig",
+    "RequestConfig",
+    "MaxAdContentRating",
+    "AdSizeType",
+    "TrackingAuthorizationStatus"
+  ]
+}
